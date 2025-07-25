@@ -1,11 +1,2 @@
-[phases.setup]
-nixPkgs = ["python39", "pip"]
-
-[phases.install]
-cmds = ["cd backend && pip install -r requirements.txt"]
-
-[phases.build]
-cmds = ["echo 'Build completed'"]
-
 [start]
-cmd = "cd backend && python main.py" 
+cmd = "python main.py" 

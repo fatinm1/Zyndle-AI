@@ -1,5 +1,16 @@
 # Zyndle AI Backend Dependencies
-# This file helps Railway/Nixpacks detect the Python backend
+# This file includes all the Python dependencies for the backend
 
-# Core dependencies are in backend/requirements.txt
-# This file is for Railway deployment detection 
+fastapi==0.116.1
+uvicorn==0.35.0
+openai==1.97.1
+langchain==0.3.27
+chromadb>=0.4.24
+psycopg2-binary==2.9.10
+python-multipart==0.0.20
+python-dotenv==1.1.1
+requests==2.32.4
+pydantic==2.11.7
+werkzeug==3.0.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4 
