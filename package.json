@@ -1,0 +1,28 @@
+{
+  "name": "zyndle-ai",
+  "version": "1.0.0",
+  "description": "AI-powered learning companion for YouTube videos",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "python main.py",
+    "dev": "cd frontend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fatinm1/Zyndle-AI.git"
+  },
+  "keywords": [
+    "ai",
+    "learning",
+    "youtube",
+    "education",
+    "react",
+    "fastapi"
+  ],
+  "author": "Zyndle AI Team",
+  "license": "MIT"
+} 
