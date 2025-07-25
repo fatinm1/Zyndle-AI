@@ -1,0 +1,5 @@
+# Zyndle AI Backend Dependencies
+# This file helps Railway/Nixpacks detect the Python backend
+
+# Core dependencies are in backend/requirements.txt
+# This file is for Railway deployment detection 

@@ -5,6 +5,7 @@
 
 # Railway
 .railway/
+railway.toml
 
 # Python
 __pycache__/
