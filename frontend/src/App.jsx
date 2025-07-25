@@ -18,7 +18,7 @@ function App() {
     
     setIsAnalyzing(true)
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || '';
       const response = await authService.authenticatedFetch(`${apiUrl}/analyze`, {
         method: 'POST',
         headers: {
@@ -391,7 +391,7 @@ function VideoWorkspace({ videoData, onBack }) {
     setChatMessage('')
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_URL || '';
       const response = await authService.authenticatedFetch(`${apiUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
