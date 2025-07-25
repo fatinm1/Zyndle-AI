@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 
@@ -38,6 +41,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files for frontend
+frontend_dist = Path("../frontend/dist")
+if frontend_dist.exists():
+    app.mount("/static", StaticFiles(directory=str(frontend_dist)), name="static")
+    
+    @app.get("/")
+    async def serve_frontend():
+        """Serve the frontend index.html"""
+        index_path = frontend_dist / "index.html"
+        if index_path.exists():
+            return FileResponse(str(index_path))
+        else:
+            return {"message": "Zyndle AI API is running!"}
+else:
+    @app.get("/")
+    async def root():
+        return {"message": "Zyndle AI API is running!"}
 
 # Initialize services
 youtube_service = YouTubeService()
@@ -136,10 +157,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
-
-@app.get("/")
-async def root():
-    return {"message": "Zyndle AI API is running!"}
 
 @app.get("/health")
 async def health_check():
