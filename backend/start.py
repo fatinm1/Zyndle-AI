@@ -1,27 +1,48 @@
 #!/usr/bin/env python3
 """
-Startup script for LearnWise AI Backend
+Startup script for Zyndle AI Backend
+This script handles proper application startup and health checks
 """
 
-import uvicorn
 import os
-from dotenv import load_dotenv
+import sys
+import uvicorn
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Add the current directory to Python path
+sys.path.append(str(Path(__file__).parent))
 
-if __name__ == "__main__":
-    print("🚀 Starting LearnWise AI Backend...")
-    print("📍 API will be available at: http://localhost:8000")
-    print("📚 API Documentation at: http://localhost:8000/docs")
-    print("🔧 Health check at: http://localhost:8000/health")
-    print()
+def main():
+    """Main startup function"""
+    print("🚀 Starting Zyndle AI Backend...")
+    
+    # Set default port
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    
+    print(f"📡 Server will run on {host}:{port}")
+    print(f"🌍 Environment: {os.getenv('RAILWAY_ENVIRONMENT', 'development')}")
+    
+    # Check for required environment variables
+    required_vars = ['OPENAI_API_KEY']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        print(f"⚠️ Warning: Missing environment variables: {missing_vars}")
+        print("Some features may not work properly")
     
     # Start the server
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    ) 
+    try:
+        uvicorn.run(
+            "main:app",
+            host=host,
+            port=port,
+            reload=False,  # Disable reload in production
+            log_level="info"
+        )
+    except Exception as e:
+        print(f"❌ Failed to start server: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main() 

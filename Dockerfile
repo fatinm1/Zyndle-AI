@@ -37,4 +37,4 @@ RUN cd frontend && npm run build
 EXPOSE 8000
 
 # Start the application
-CMD ["python", "main.py"] 
+CMD ["python", "start.py"] 

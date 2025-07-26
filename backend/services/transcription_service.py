@@ -14,18 +14,24 @@ logger = logging.getLogger(__name__)
 class TranscriptionService:
     def __init__(self):
         self.model = None
-        self._load_whisper_model()
+        # Don't load the model during initialization - load it lazily when needed
+        logger.info("TranscriptionService initialized (Whisper model will be loaded on first use)")
     
     def _load_whisper_model(self):
         """Load Whisper model (lazy loading to avoid startup delays)"""
+        if self.model is not None:
+            return self.model
+            
         try:
             logger.info(f"Loading Whisper model: {TranscriptionConfig.WHISPER_MODEL}")
             # Load model based on configuration
             self.model = whisper.load_model(TranscriptionConfig.WHISPER_MODEL)
             logger.info("Whisper model loaded successfully")
+            return self.model
         except Exception as e:
             logger.error(f"Error loading Whisper model: {e}")
             self.model = None
+            return None
     
     def download_video_audio(self, video_id: str) -> Optional[str]:
         """Download video and extract audio to a temporary file"""
