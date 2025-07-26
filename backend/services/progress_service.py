@@ -1,269 +1,254 @@
+import os
 from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+import json
 from sqlalchemy.orm import Session
 from models.database import User, VideoAnalysis, QuizSession
-from datetime import datetime, timedelta
 
 class ProgressService:
     def __init__(self):
-        pass
+        # In-memory storage for user progress (in production, this would be a database)
+        self.user_progress = {}
+        self.video_history = {}
+        self.quiz_history = {}
+        print("✅ ProgressService initialized with in-memory storage")
     
     def get_user_progress(self, db: Session, user_id: int) -> Dict:
         """Get comprehensive user progress statistics"""
         try:
-            # Get user's video analysis history
-            video_analyses = db.query(VideoAnalysis).filter(VideoAnalysis.user_id == user_id).all()
+            # Get user's progress data
+            user_data = self.user_progress.get(user_id, {
+                'videos_watched': [],
+                'quizzes_taken': [],
+                'total_time': 0
+            })
             
-            # Get user's quiz history
-            quiz_sessions = db.query(QuizSession).filter(QuizSession.user_id == user_id).all()
+            videos_watched = user_data.get('videos_watched', [])
+            quizzes_taken = user_data.get('quizzes_taken', [])
             
             # Calculate statistics
-            total_videos_watched = len(video_analyses)
-            total_quizzes_taken = len(quiz_sessions)
+            total_videos = len(videos_watched)
+            total_time = user_data.get('total_time', 0)
             
-            # Calculate average quiz score
-            total_score = sum(quiz.score for quiz in quiz_sessions if quiz.score is not None)
-            average_score = total_score / total_quizzes_taken if total_quizzes_taken > 0 else 0
+            # Get recent videos (last 5)
+            recent_videos = videos_watched[-5:] if videos_watched else []
             
-            # Get recent activity (last 7 days)
-            week_ago = datetime.utcnow() - timedelta(days=7)
-            recent_videos = [v for v in video_analyses if v.created_at >= week_ago]
-            recent_quizzes = [q for q in quiz_sessions if q.created_at >= week_ago]
+            # Calculate quiz statistics
+            total_quizzes = len(quizzes_taken)
+            average_score = 0
+            if quizzes_taken:
+                total_score = sum(quiz.get('score', 0) for quiz in quizzes_taken)
+                average_score = total_score / total_quizzes
             
-            # Get learning streak (consecutive days with activity)
-            streak = self._calculate_learning_streak(video_analyses, quiz_sessions)
+            # Determine favorite subjects based on video titles
+            subjects = []
+            for video in videos_watched:
+                title = video.get('title', '').lower()
+                if 'physics' in title or 'nuclear' in title:
+                    subjects.append('Physics')
+                elif 'chemistry' in title:
+                    subjects.append('Chemistry')
+                elif 'math' in title or 'mathematics' in title:
+                    subjects.append('Mathematics')
+                elif 'biology' in title:
+                    subjects.append('Biology')
+                elif 'computer' in title or 'programming' in title:
+                    subjects.append('Computer Science')
+            
+            # Get unique subjects
+            favorite_subjects = list(set(subjects))[:3]  # Top 3 subjects
+            if not favorite_subjects:
+                favorite_subjects = ['General Education']
+            
+            # Generate insights based on actual activity
+            insights = []
+            if total_videos > 0:
+                insights.append(f"You've watched {total_videos} educational videos!")
+            if total_quizzes > 0:
+                insights.append(f"Great job taking {total_quizzes} quizzes with {average_score:.0f}% average score!")
+            if total_time > 0:
+                hours = total_time // 60
+                minutes = total_time % 60
+                insights.append(f"You've spent {hours}h {minutes}m learning!")
+            
+            if not insights:
+                insights = ["Start your learning journey by analyzing your first video!"]
             
             return {
-                "total_videos_watched": total_videos_watched,
-                "total_quizzes_taken": total_quizzes_taken,
-                "average_quiz_score": round(average_score, 1),
-                "recent_videos": len(recent_videos),
-                "recent_quizzes": len(recent_quizzes),
-                "learning_streak": streak,
-                "total_learning_time": self._calculate_total_time(video_analyses),
-                "favorite_topics": self._get_favorite_topics(video_analyses),
-                "recent_activity": self._get_recent_activity(video_analyses, quiz_sessions)
+                "total_videos_watched": total_videos,
+                "total_time_watched": f"{total_time // 60}:{total_time % 60:02d}",
+                "favorite_subjects": favorite_subjects,
+                "recent_videos": recent_videos,
+                "quiz_stats": {
+                    "total_quizzes_taken": total_quizzes,
+                    "average_score": round(average_score),
+                    "best_subject": favorite_subjects[0] if favorite_subjects else "General"
+                },
+                "learning_insights": insights
             }
+            
         except Exception as e:
             print(f"Error getting user progress: {e}")
             return self._get_mock_progress()
     
+    def get_learning_insights(self, db: Session, user_id: int) -> Dict:
+        """Get personalized learning insights and recommendations"""
+        try:
+            user_data = self.user_progress.get(user_id, {
+                'videos_watched': [],
+                'quizzes_taken': []
+            })
+            
+            videos_watched = user_data.get('videos_watched', [])
+            quizzes_taken = user_data.get('quizzes_taken', [])
+            
+            insights = []
+            recommendations = []
+            
+            if not videos_watched:
+                insights.append("Welcome to Zyndle AI! Start by analyzing your first educational video.")
+                recommendations = [
+                    "Try analyzing a YouTube video in your favorite subject",
+                    "Explore different topics to discover your learning preferences",
+                    "Take quizzes after watching videos to test your understanding"
+                ]
+            else:
+                total_videos = len(videos_watched)
+                total_quizzes = len(quizzes_taken)
+                
+                insights.append(f"You've watched {total_videos} educational videos!")
+                
+                if total_quizzes > 0:
+                    avg_score = sum(quiz.get('score', 0) for quiz in quizzes_taken) / total_quizzes
+                    insights.append(f"Your quiz performance shows {avg_score:.0f}% average understanding!")
+                    
+                    if avg_score >= 80:
+                        insights.append("Excellent comprehension! You're ready for more advanced topics.")
+                        recommendations.append("Try more challenging videos in your favorite subjects")
+                    elif avg_score >= 60:
+                        insights.append("Good progress! Keep practicing to improve your understanding.")
+                        recommendations.append("Review concepts you find challenging")
+                    else:
+                        insights.append("Keep practicing! Review the basics before moving to advanced topics.")
+                        recommendations.append("Focus on fundamental concepts first")
+                else:
+                    insights.append("Try taking quizzes to test your understanding!")
+                    recommendations.append("Take quizzes after watching videos")
+                
+                # Subject-specific recommendations
+                subjects = set()
+                for video in videos_watched:
+                    title = video.get('title', '').lower()
+                    if 'physics' in title:
+                        subjects.add('Physics')
+                    elif 'chemistry' in title:
+                        subjects.add('Chemistry')
+                    elif 'math' in title:
+                        subjects.add('Mathematics')
+                
+                if subjects:
+                    insights.append(f"You're exploring {', '.join(subjects)} - great subject diversity!")
+                    recommendations.append(f"Continue exploring {list(subjects)[0]} topics")
+                
+                recommendations.extend([
+                    "Set learning goals for consistent progress",
+                    "Take notes while watching videos",
+                    "Review previous videos to reinforce learning"
+                ])
+            
+            return {
+                "insights": insights,
+                "recommendations": recommendations
+            }
+            
+        except Exception as e:
+            print(f"Error getting learning insights: {e}")
+            return {
+                "insights": ["Start your learning journey!"],
+                "recommendations": ["Analyze your first video", "Take quizzes to test understanding"]
+            }
+    
     def record_video_watched(self, db: Session, user_id: int, video_data: Dict) -> bool:
         """Record that a user watched a video"""
         try:
-            video_analysis = VideoAnalysis(
-                user_id=user_id,
-                video_id=video_data.get('video_id'),
-                title=video_data.get('title'),
-                channel=video_data.get('channel'),
-                duration=video_data.get('duration'),
-                summary=video_data.get('summary'),
-                created_at=datetime.utcnow()
-            )
-            db.add(video_analysis)
-            db.commit()
+            if user_id not in self.user_progress:
+                self.user_progress[user_id] = {
+                    'videos_watched': [],
+                    'quizzes_taken': [],
+                    'total_time': 0
+                }
+            
+            # Parse duration to get minutes
+            duration_str = video_data.get('duration', '0:00')
+            duration_parts = duration_str.split(':')
+            if len(duration_parts) == 2:
+                minutes = int(duration_parts[0]) + int(duration_parts[1]) / 60
+            elif len(duration_parts) == 3:
+                minutes = int(duration_parts[0]) * 60 + int(duration_parts[1]) + int(duration_parts[2]) / 60
+            else:
+                minutes = 10  # Default 10 minutes
+            
+            # Create video record
+            video_record = {
+                'video_id': video_data.get('video_id', 'unknown'),
+                'title': video_data.get('title', 'Unknown Video'),
+                'channel': video_data.get('channel', 'Unknown Channel'),
+                'duration': video_data.get('duration', '0:00'),
+                'watched_at': datetime.now().isoformat(),
+                'summary': video_data.get('summary', '')
+            }
+            
+            # Add to user's video history
+            self.user_progress[user_id]['videos_watched'].append(video_record)
+            self.user_progress[user_id]['total_time'] += int(minutes)
+            
+            print(f"✅ Recorded video: {video_data.get('title', 'Unknown')} for user {user_id}")
             return True
+            
         except Exception as e:
             print(f"Error recording video watched: {e}")
-            db.rollback()
             return False
     
     def record_quiz_result(self, db: Session, user_id: int, video_id: str, score: int, total_questions: int) -> bool:
         """Record quiz results"""
         try:
-            quiz_session = QuizSession(
-                user_id=user_id,
-                video_id=video_id,
-                score=score,
-                total_questions=total_questions,
-                created_at=datetime.utcnow()
-            )
-            db.add(quiz_session)
-            db.commit()
+            if user_id not in self.user_progress:
+                self.user_progress[user_id] = {
+                    'videos_watched': [],
+                    'quizzes_taken': [],
+                    'total_time': 0
+                }
+            
+            # Create quiz record
+            quiz_record = {
+                'video_id': video_id,
+                'score': score,
+                'total_questions': total_questions,
+                'percentage': round((score / total_questions) * 100),
+                'taken_at': datetime.now().isoformat()
+            }
+            
+            # Add to user's quiz history
+            self.user_progress[user_id]['quizzes_taken'].append(quiz_record)
+            
+            print(f"✅ Recorded quiz: {score}/{total_questions} ({quiz_record['percentage']}%) for user {user_id}")
             return True
+            
         except Exception as e:
             print(f"Error recording quiz result: {e}")
-            db.rollback()
             return False
-    
-    def get_learning_insights(self, db: Session, user_id: int) -> Dict:
-        """Get personalized learning insights"""
-        try:
-            video_analyses = db.query(VideoAnalysis).filter(VideoAnalysis.user_id == user_id).all()
-            quiz_sessions = db.query(QuizSession).filter(QuizSession.user_id == user_id).all()
-            
-            # Analyze learning patterns
-            topics = self._get_favorite_topics(video_analyses)
-            weak_areas = self._identify_weak_areas(quiz_sessions)
-            recommendations = self._generate_recommendations(video_analyses, quiz_sessions)
-            
-            return {
-                "favorite_topics": topics,
-                "weak_areas": weak_areas,
-                "recommendations": recommendations,
-                "learning_style": self._analyze_learning_style(video_analyses, quiz_sessions)
-            }
-        except Exception as e:
-            print(f"Error getting learning insights: {e}")
-            return self._get_mock_insights()
-    
-    def _calculate_learning_streak(self, video_analyses: List, quiz_sessions: List) -> int:
-        """Calculate consecutive days with learning activity"""
-        try:
-            # Combine all activity dates
-            activity_dates = set()
-            for video in video_analyses:
-                activity_dates.add(video.created_at.date())
-            for quiz in quiz_sessions:
-                activity_dates.add(quiz.created_at.date())
-            
-            if not activity_dates:
-                return 0
-            
-            # Sort dates and find longest streak
-            sorted_dates = sorted(activity_dates, reverse=True)
-            current_streak = 0
-            current_date = datetime.utcnow().date()
-            
-            for date in sorted_dates:
-                if date == current_date - timedelta(days=current_streak):
-                    current_streak += 1
-                else:
-                    break
-            
-            return current_streak
-        except Exception as e:
-            print(f"Error calculating learning streak: {e}")
-            return 0
-    
-    def _calculate_total_time(self, video_analyses: List) -> int:
-        """Calculate total learning time in minutes"""
-        total_minutes = 0
-        for video in video_analyses:
-            if video.duration:
-                # Parse duration (format: "15:30" or "1:23:45")
-                parts = video.duration.split(':')
-                if len(parts) == 2:
-                    total_minutes += int(parts[0]) + int(parts[1]) / 60
-                elif len(parts) == 3:
-                    total_minutes += int(parts[0]) * 60 + int(parts[1]) + int(parts[2]) / 60
-        return round(total_minutes)
-    
-    def _get_favorite_topics(self, video_analyses: List) -> List[str]:
-        """Extract favorite topics from video titles"""
-        topics = []
-        for video in video_analyses:
-            if video.title:
-                # Simple topic extraction (can be improved with NLP)
-                title_lower = video.title.lower()
-                if 'machine learning' in title_lower or 'ml' in title_lower:
-                    topics.append('Machine Learning')
-                elif 'python' in title_lower:
-                    topics.append('Python Programming')
-                elif 'javascript' in title_lower or 'js' in title_lower:
-                    topics.append('JavaScript')
-                elif 'react' in title_lower:
-                    topics.append('React')
-                elif 'ai' in title_lower or 'artificial intelligence' in title_lower:
-                    topics.append('Artificial Intelligence')
-                else:
-                    topics.append('General Learning')
-        
-        # Return top 3 most common topics
-        from collections import Counter
-        topic_counts = Counter(topics)
-        return [topic for topic, count in topic_counts.most_common(3)]
-    
-    def _identify_weak_areas(self, quiz_sessions: List) -> List[str]:
-        """Identify areas where user struggles based on quiz scores"""
-        weak_areas = []
-        low_score_quizzes = [q for q in quiz_sessions if q.score and q.score < 70]
-        
-        if len(low_score_quizzes) > 0:
-            weak_areas.append("Quiz Performance")
-        
-        if len(quiz_sessions) < 5:
-            weak_areas.append("Quiz Participation")
-        
-        return weak_areas
-    
-    def _generate_recommendations(self, video_analyses: List, quiz_sessions: List) -> List[str]:
-        """Generate personalized learning recommendations"""
-        recommendations = []
-        
-        if len(video_analyses) < 3:
-            recommendations.append("Try watching more educational videos to build a strong foundation")
-        
-        if len(quiz_sessions) < 2:
-            recommendations.append("Take more quizzes to test your understanding and track progress")
-        
-        low_scores = [q for q in quiz_sessions if q.score and q.score < 70]
-        if len(low_scores) > 0:
-            recommendations.append("Focus on reviewing topics where you scored lower on quizzes")
-        
-        if len(video_analyses) > 10:
-            recommendations.append("Great progress! Consider exploring advanced topics in your favorite subjects")
-        
-        return recommendations
-    
-    def _analyze_learning_style(self, video_analyses: List, quiz_sessions: List) -> str:
-        """Analyze user's learning style based on activity patterns"""
-        if len(quiz_sessions) > len(video_analyses) * 0.8:
-            return "Quiz-focused learner"
-        elif len(video_analyses) > 10:
-            return "Visual learner"
-        else:
-            return "Balanced learner"
-    
-    def _get_recent_activity(self, video_analyses: List, quiz_sessions: List) -> List[Dict]:
-        """Get recent learning activity"""
-        recent_activity = []
-        
-        # Combine and sort recent activities
-        for video in video_analyses[-5:]:  # Last 5 videos
-            recent_activity.append({
-                "type": "video_watched",
-                "title": video.title,
-                "date": video.created_at.isoformat(),
-                "description": f"Watched {video.title}"
-            })
-        
-        for quiz in quiz_sessions[-5:]:  # Last 5 quizzes
-            recent_activity.append({
-                "type": "quiz_taken",
-                "score": quiz.score,
-                "date": quiz.created_at.isoformat(),
-                "description": f"Quiz score: {quiz.score}%"
-            })
-        
-        # Sort by date and return recent 10 activities
-        recent_activity.sort(key=lambda x: x["date"], reverse=True)
-        return recent_activity[:10]
     
     def _get_mock_progress(self) -> Dict:
         """Return mock progress data for development"""
         return {
-            "total_videos_watched": 5,
-            "total_quizzes_taken": 3,
-            "average_quiz_score": 85.0,
-            "recent_videos": 2,
-            "recent_quizzes": 1,
-            "learning_streak": 3,
-            "total_learning_time": 120,
-            "favorite_topics": ["Machine Learning", "Python Programming"],
-            "recent_activity": [
-                {"type": "video_watched", "title": "Introduction to ML", "date": "2024-01-15T10:00:00Z"},
-                {"type": "quiz_taken", "score": 90, "date": "2024-01-14T15:30:00Z"}
-            ]
-        }
-    
-    def _get_mock_insights(self) -> Dict:
-        """Return mock insights for development"""
-        return {
-            "favorite_topics": ["Machine Learning", "Python Programming"],
-            "weak_areas": ["Advanced Concepts"],
-            "recommendations": [
-                "Try watching more educational videos",
-                "Take more quizzes to test understanding"
-            ],
-            "learning_style": "Visual learner"
+            "total_videos_watched": 0,
+            "total_time_watched": "0:00",
+            "favorite_subjects": ["Start Learning"],
+            "recent_videos": [],
+            "quiz_stats": {
+                "total_quizzes_taken": 0,
+                "average_score": 0,
+                "best_subject": "None"
+            },
+            "learning_insights": ["Welcome to Zyndle AI! Start by analyzing your first video."]
         } 
