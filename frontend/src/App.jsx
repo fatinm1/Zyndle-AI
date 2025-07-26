@@ -63,6 +63,11 @@ function App() {
     setShowProgress(false)
     setVideoData(null)
     setYoutubeUrl('')
+    
+    // If user is authenticated, take them to the video input page instead of landing page
+    if (authService.isAuthenticated()) {
+      setShowVideoInput(true)
+    }
   }
 
   const handleShowProgress = () => {
@@ -221,20 +226,38 @@ function App() {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-4"
           >
-            {authService.isAuthenticated() && (
+            {authService.isAuthenticated() ? (
+              <>
+                <button
+                  onClick={handleShowProgress}
+                  className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
+                >
+                  Progress
+                </button>
+                <button
+                  onClick={() => setShowVideoInput(true)}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                >
+                  Start Learning
+                </button>
+                <button
+                  onClick={() => {
+                    authService.logout()
+                    window.location.reload()
+                  }}
+                  className="px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition-all duration-300"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
               <button
-                onClick={handleShowProgress}
-                className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
+                onClick={handleSignIn}
+                className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
               >
-                Progress
+                Sign In
               </button>
             )}
-            <button
-              onClick={handleSignIn}
-              className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
-            >
-              Sign In
-            </button>
           </motion.div>
         </div>
       </nav>
@@ -263,23 +286,47 @@ function App() {
             transition={{ delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleGetStarted}
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
-            >
-              <Play className="w-5 h-5" />
-              <span>Start Learning</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleWatchDemo}
-              className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
-            >
-              Watch Demo
-            </motion.button>
+            {authService.isAuthenticated() ? (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowVideoInput(true)}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
+                >
+                  <Play className="w-5 h-5" />
+                  <span>Start Learning</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleShowProgress}
+                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
+                >
+                  View Progress
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleGetStarted}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
+                >
+                  <Play className="w-5 h-5" />
+                  <span>Start Learning</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleWatchDemo}
+                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
+                >
+                  Watch Demo
+                </motion.button>
+              </>
+            )}
           </motion.div>
         </motion.div>
       </section>
@@ -379,19 +426,39 @@ function App() {
           className="text-center"
         >
           <div className="glass-dark rounded-2xl p-12 max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Learning?</h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Join thousands of students who are already learning smarter with Zyndle AI
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleGetStarted}
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
-            >
-              <span>Get Started Free</span>
-              <ChevronRight className="w-5 h-5" />
-            </motion.button>
+            {authService.isAuthenticated() ? (
+              <>
+                <h2 className="text-3xl font-bold mb-4">Continue Your Learning Journey</h2>
+                <p className="text-xl text-gray-300 mb-8">
+                  Ready to dive into another educational video? Your progress is being tracked!
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowVideoInput(true)}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
+                >
+                  <span>Start New Video</span>
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Learning?</h2>
+                <p className="text-xl text-gray-300 mb-8">
+                  Join thousands of students who are already learning smarter with Zyndle AI
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleGetStarted}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
+                >
+                  <span>Get Started Free</span>
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </>
+            )}
           </div>
         </motion.div>
       </section>
