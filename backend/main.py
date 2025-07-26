@@ -43,8 +43,14 @@ app.add_middleware(
 )
 
 # Mount static files for frontend
-frontend_dist = Path("frontend/dist")
+import os
+print(f"Backend working directory: {os.getcwd()}")
+frontend_dist = Path("../frontend/dist")
+print(f"Looking for frontend at: {frontend_dist.absolute()}")
+print(f"Frontend dist exists: {frontend_dist.exists()}")
+
 if frontend_dist.exists():
+    print("Frontend dist found! Setting up static file serving...")
     # Mount static assets
     app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="assets")
     
@@ -52,9 +58,12 @@ if frontend_dist.exists():
     async def serve_frontend():
         """Serve the frontend index.html"""
         index_path = frontend_dist / "index.html"
+        print(f"Looking for index.html at: {index_path.absolute()}")
         if index_path.exists():
+            print("Serving frontend index.html")
             return FileResponse(str(index_path))
         else:
+            print("index.html not found, serving API message")
             return {"message": "Zyndle AI API is running!"}
     
     # Catch-all route for SPA routing
@@ -77,6 +86,7 @@ if frontend_dist.exists():
         else:
             return {"message": "Zyndle AI API is running!"}
 else:
+    print("Frontend dist not found! Serving API only.")
     @app.get("/")
     async def root():
         return {"message": "Zyndle AI API is running!"}
