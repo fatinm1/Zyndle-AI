@@ -64,10 +64,8 @@ function App() {
     setVideoData(null)
     setYoutubeUrl('')
     
-    // If user is authenticated, take them to the video input page instead of landing page
-    if (authService.isAuthenticated()) {
-      setShowVideoInput(true)
-    }
+    // Always go back to home page, regardless of authentication status
+    // The home page will show different content based on authentication
   }
 
   const handleShowProgress = () => {
@@ -232,13 +230,13 @@ function App() {
                   onClick={handleShowProgress}
                   className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
                 >
-                  Progress
+                  View Progress
                 </button>
                 <button
                   onClick={() => setShowVideoInput(true)}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                 >
-                  Start Learning
+                  Input Video
                 </button>
                 <button
                   onClick={() => {
@@ -295,15 +293,15 @@ function App() {
                   className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
                 >
                   <Play className="w-5 h-5" />
-                  <span>Start Learning</span>
+                  <span>Input Video</span>
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleShowProgress}
+                  onClick={handleWatchDemo}
                   className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
                 >
-                  View Progress
+                  Watch Demo
                 </motion.button>
               </>
             ) : (
@@ -438,7 +436,7 @@ function App() {
                   onClick={() => setShowVideoInput(true)}
                   className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
                 >
-                  <span>Start New Video</span>
+                  <span>Input New Video</span>
                   <ChevronRight className="w-5 h-5" />
                 </motion.button>
               </>
