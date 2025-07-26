@@ -34,6 +34,7 @@ class User(Base):
     video_analyses = relationship("VideoAnalysis", back_populates="user")
     chat_sessions = relationship("ChatSession", back_populates="user")
     quiz_sessions = relationship("QuizSession", back_populates="user")
+    notes = relationship("Note", back_populates="user")
     
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
@@ -87,6 +88,20 @@ class QuizSession(Base):
     
     # Relationship
     user = relationship("User", back_populates="quiz_sessions")
+
+class Note(Base):
+    __tablename__ = "notes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    video_id = Column(String, index=True)
+    title = Column(String)
+    content = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    user = relationship("User", back_populates="notes")
 
 # Create tables
 def create_tables():

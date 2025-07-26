@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Play, Brain, MessageCircle, BookOpen, Zap, ChevronRight } from 'lucide-react'
 import authService from './authService'
@@ -11,6 +11,7 @@ function App() {
   const [showVideoInput, setShowVideoInput] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [showDemo, setShowDemo] = useState(false)
+  const [showProgress, setShowProgress] = useState(false)
   const [authMode, setAuthMode] = useState('signin') // 'signin' or 'register'
 
   const handleAnalyze = async () => {
@@ -59,8 +60,13 @@ function App() {
     setShowVideoInput(false)
     setShowAuth(false)
     setShowDemo(false)
+    setShowProgress(false)
     setVideoData(null)
     setYoutubeUrl('')
+  }
+
+  const handleShowProgress = () => {
+    setShowProgress(true)
   }
 
   const handleAuthSuccess = () => {
@@ -101,6 +107,10 @@ function App() {
 
   if (showDemo) {
     return <DemoPage onBack={handleBackToHome} />
+  }
+
+  if (showProgress) {
+    return <ProgressDashboard onBack={handleBackToHome} />
   }
 
   if (showVideoInput) {
@@ -206,14 +216,26 @@ function App() {
             <span className="text-xl font-bold text-gradient">Zyndle AI</span>
           </motion.div>
           
-          <motion.button
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={handleSignIn}
-            className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
+            className="flex items-center space-x-4"
           >
-            Sign In
-          </motion.button>
+            {authService.isAuthenticated() && (
+              <button
+                onClick={handleShowProgress}
+                className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
+              >
+                Progress
+              </button>
+            )}
+            <button
+              onClick={handleSignIn}
+              className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
+            >
+              Sign In
+            </button>
+          </motion.div>
         </div>
       </nav>
 
@@ -382,6 +404,14 @@ function VideoWorkspace({ videoData, onBack }) {
   const [activeTab, setActiveTab] = useState('summary')
   const [chatMessage, setChatMessage] = useState('')
   const [chatHistory, setChatHistory] = useState([])
+  const [quizQuestions, setQuizQuestions] = useState([])
+  const [quizAnswers, setQuizAnswers] = useState({})
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [quizScore, setQuizScore] = useState(0)
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false)
+  const [notes, setNotes] = useState([])
+  const [newNote, setNewNote] = useState('')
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false)
 
   const handleChat = async () => {
     if (!chatMessage.trim()) return
@@ -412,6 +442,138 @@ function VideoWorkspace({ videoData, onBack }) {
         role: 'assistant', 
         content: 'Sorry, I encountered an error. Please try again.' 
       }])
+    }
+  }
+
+  const loadQuiz = async () => {
+    if (quizQuestions.length > 0) return // Already loaded
+    
+    setIsLoadingQuiz(true)
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await authService.authenticatedFetch(`${apiUrl}/quiz`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          video_id: 'sample',
+          transcript: videoData.transcript,
+          summary: videoData.summary,
+          num_questions: 5
+        }),
+      })
+      
+      const data = await response.json()
+      setQuizQuestions(data.questions)
+    } catch (error) {
+      console.error('Error loading quiz:', error)
+    } finally {
+      setIsLoadingQuiz(false)
+    }
+  }
+
+  const handleQuizAnswer = (questionIndex, answerIndex) => {
+    setQuizAnswers(prev => ({
+      ...prev,
+      [questionIndex]: answerIndex
+    }))
+  }
+
+  const submitQuiz = async () => {
+    let correct = 0
+    quizQuestions.forEach((question, index) => {
+      if (quizAnswers[index] === question.correct_answer) {
+        correct++
+      }
+    })
+    const score = Math.round((correct / quizQuestions.length) * 100)
+    setQuizScore(score)
+    setQuizSubmitted(true)
+    
+    // Record quiz result for progress tracking
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      await authService.authenticatedFetch(`${apiUrl}/progress/record-quiz`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          video_id: 'sample',
+          score: score,
+          total_questions: quizQuestions.length
+        }),
+      })
+    } catch (error) {
+      console.error('Error recording quiz result:', error)
+      // Don't show error to user, just log it
+    }
+  }
+
+  const resetQuiz = () => {
+    setQuizAnswers({})
+    setQuizSubmitted(false)
+    setQuizScore(0)
+  }
+
+  // Load quiz when tab is selected
+  React.useEffect(() => {
+    if (activeTab === 'quiz' && quizQuestions.length === 0) {
+      loadQuiz()
+    }
+  }, [activeTab])
+
+  // Load notes when tab is selected
+  React.useEffect(() => {
+    if (activeTab === 'notes' && notes.length === 0) {
+      loadNotes()
+    }
+  }, [activeTab])
+
+  const loadNotes = async () => {
+    setIsLoadingNotes(true)
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await authService.authenticatedFetch(`${apiUrl}/notes?video_id=sample`)
+      const data = await response.json()
+      setNotes(data.notes || [])
+    } catch (error) {
+      console.error('Error loading notes:', error)
+    } finally {
+      setIsLoadingNotes(false)
+    }
+  }
+
+  const saveNote = async () => {
+    if (!newNote.trim()) return
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await authService.authenticatedFetch(`${apiUrl}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          video_id: 'sample',
+          content: newNote,
+          title: `Note on ${videoData.title}`
+        }),
+      })
+      
+      const savedNote = await response.json()
+      setNotes([savedNote, ...notes])
+      setNewNote('')
+    } catch (error) {
+      console.error('Error saving note:', error)
+    }
+  }
+
+  const deleteNote = async (noteId) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      await authService.authenticatedFetch(`${apiUrl}/notes/${noteId}`, {
+        method: 'DELETE'
+      })
+      
+      setNotes(notes.filter(note => note.id !== noteId))
+    } catch (error) {
+      console.error('Error deleting note:', error)
     }
   }
 
@@ -474,7 +636,7 @@ function VideoWorkspace({ videoData, onBack }) {
             {/* Tabs */}
             <div className="glass-dark rounded-lg p-1">
               <div className="flex space-x-1">
-                {['summary', 'chat', 'quiz'].map((tab) => (
+                {['summary', 'chat', 'quiz', 'notes'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -546,7 +708,146 @@ function VideoWorkspace({ videoData, onBack }) {
               {activeTab === 'quiz' && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Quiz</h3>
-                  <p className="text-gray-300">Quiz feature coming soon...</p>
+                  
+                  {isLoadingQuiz ? (
+                    <div className="text-center py-8">
+                      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-300">Loading quiz questions...</p>
+                    </div>
+                  ) : quizQuestions.length > 0 ? (
+                    <div>
+                      {!quizSubmitted ? (
+                        <div>
+                          <p className="text-gray-300 mb-4">Test your knowledge with these questions:</p>
+                          <div className="space-y-6">
+                            {quizQuestions.map((question, qIndex) => (
+                              <div key={qIndex} className="border border-gray-700 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">{qIndex + 1}. {question.question}</h4>
+                                <div className="space-y-2">
+                                  {question.options.map((option, oIndex) => (
+                                    <label key={oIndex} className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name={`question-${qIndex}`}
+                                        checked={quizAnswers[qIndex] === oIndex}
+                                        onChange={() => handleQuizAnswer(qIndex, oIndex)}
+                                        className="text-blue-500 focus:ring-blue-500"
+                                      />
+                                      <span className="text-gray-300">{option}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            onClick={submitQuiz}
+                            disabled={Object.keys(quizAnswers).length < quizQuestions.length}
+                            className="mt-6 w-full py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Submit Quiz
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="text-center mb-6">
+                            <h4 className="text-xl font-semibold mb-2">Quiz Results</h4>
+                            <div className="text-3xl font-bold text-blue-500 mb-2">{quizScore}%</div>
+                            <p className="text-gray-300">
+                              You got {Math.round((quizScore / 100) * quizQuestions.length)} out of {quizQuestions.length} questions correct!
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {quizQuestions.map((question, qIndex) => (
+                              <div key={qIndex} className="border border-gray-700 rounded-lg p-4">
+                                <h4 className="font-medium mb-2">{qIndex + 1}. {question.question}</h4>
+                                <div className="space-y-1 mb-3">
+                                  {question.options.map((option, oIndex) => (
+                                    <div
+                                      key={oIndex}
+                                      className={`p-2 rounded ${
+                                        oIndex === question.correct_answer
+                                          ? 'bg-green-500/20 border border-green-500/30'
+                                          : oIndex === quizAnswers[qIndex] && oIndex !== question.correct_answer
+                                          ? 'bg-red-500/20 border border-red-500/30'
+                                          : 'bg-gray-700/50'
+                                      }`}
+                                    >
+                                      {option}
+                                      {oIndex === question.correct_answer && (
+                                        <span className="ml-2 text-green-400">✓ Correct</span>
+                                      )}
+                                      {oIndex === quizAnswers[qIndex] && oIndex !== question.correct_answer && (
+                                        <span className="ml-2 text-red-400">✗ Your Answer</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                <p className="text-sm text-gray-400">{question.explanation}</p>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <button
+                            onClick={resetQuiz}
+                            className="mt-6 w-full py-2 bg-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+                          >
+                            Take Quiz Again
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-gray-300">No quiz questions available.</p>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'notes' && (
+                <div className="flex flex-col h-full">
+                  <h3 className="text-lg font-semibold mb-4">Your Notes</h3>
+                  {isLoadingNotes ? (
+                    <div className="text-center py-8">
+                      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-300">Loading notes...</p>
+                    </div>
+                  ) : notes.length > 0 ? (
+                    <div className="flex-1 space-y-4 overflow-y-auto">
+                      {notes.map((note) => (
+                        <div key={note.id} className="bg-gray-800 rounded-lg p-4">
+                          <h4 className="font-medium mb-2">{note.title}</h4>
+                          <p className="text-gray-300">{note.content}</p>
+                          <button
+                            onClick={() => deleteNote(note.id)}
+                            className="mt-2 text-red-400 hover:text-red-300 text-sm"
+                          >
+                            Delete Note
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-300">No notes yet for this video. Add one!</p>
+                  )}
+
+                  {/* New Note Input */}
+                  <div className="mt-6">
+                    <textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && saveNote()}
+                      placeholder="Add a new note..."
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                    ></textarea>
+                    <button
+                      onClick={saveNote}
+                      className="mt-2 w-full py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Save Note
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -811,6 +1112,229 @@ function DemoPage({ onBack }) {
             </div>
           </motion.div>
         </motion.div>
+      </section>
+    </div>
+  )
+}
+
+// Progress Dashboard Component
+function ProgressDashboard({ onBack }) {
+  const [progress, setProgress] = useState(null)
+  const [insights, setInsights] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  React.useEffect(() => {
+    loadProgressData()
+  }, [])
+
+  const loadProgressData = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      
+      // Load progress data
+      const progressResponse = await authService.authenticatedFetch(`${apiUrl}/progress`)
+      const progressData = await progressResponse.json()
+      setProgress(progressData)
+      
+      // Load insights
+      const insightsResponse = await authService.authenticatedFetch(`${apiUrl}/progress/insights`)
+      const insightsData = await insightsResponse.json()
+      setInsights(insightsData)
+    } catch (error) {
+      console.error('Error loading progress data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading your progress...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+      {/* Navigation */}
+      <nav className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-2"
+          >
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <Brain className="w-5 h-5" />
+            </div>
+            <span className="text-xl font-bold text-gradient">Zyndle AI</span>
+          </motion.div>
+          
+          <motion.button
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={onBack}
+            className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300"
+          >
+            ← Back to Home
+          </motion.button>
+        </div>
+      </nav>
+
+      {/* Progress Content */}
+      <section className="container mx-auto px-6 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Your Learning <span className="text-gradient">Progress</span>
+          </h1>
+          <p className="text-xl text-gray-300">
+            Track your learning journey and discover insights about your progress
+          </p>
+        </motion.div>
+
+        {progress && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Stats Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass-dark rounded-xl p-6 text-center"
+            >
+              <div className="text-3xl font-bold text-blue-400 mb-2">{progress.total_videos_watched}</div>
+              <p className="text-gray-300">Videos Watched</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-dark rounded-xl p-6 text-center"
+            >
+              <div className="text-3xl font-bold text-green-400 mb-2">{progress.total_quizzes_taken}</div>
+              <p className="text-gray-300">Quizzes Taken</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass-dark rounded-xl p-6 text-center"
+            >
+              <div className="text-3xl font-bold text-purple-400 mb-2">{progress.average_quiz_score}%</div>
+              <p className="text-gray-300">Average Score</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="glass-dark rounded-xl p-6 text-center"
+            >
+              <div className="text-3xl font-bold text-yellow-400 mb-2">{progress.learning_streak}</div>
+              <p className="text-gray-300">Day Streak</p>
+            </motion.div>
+          </div>
+        )}
+
+        {insights && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Learning Insights */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="glass-dark rounded-xl p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4">Learning Insights</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-blue-400 mb-2">Learning Style</h4>
+                  <p className="text-gray-300">{insights.learning_style}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-green-400 mb-2">Favorite Topics</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {insights.favorite_topics.map((topic, index) => (
+                      <span key={index} className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-sm">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-yellow-400 mb-2">Areas to Improve</h4>
+                  <ul className="text-gray-300 space-y-1">
+                    {insights.weak_areas.map((area, index) => (
+                      <li key={index}>• {area}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Recommendations */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="glass-dark rounded-xl p-6"
+            >
+              <h3 className="text-xl font-semibold mb-4">Recommendations</h3>
+              
+              <div className="space-y-3">
+                {insights.recommendations.map((recommendation, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-300">{recommendation}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Recent Activity */}
+        {progress && progress.recent_activity && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mt-12"
+          >
+            <h3 className="text-2xl font-semibold mb-6 text-center">Recent Activity</h3>
+            
+            <div className="glass-dark rounded-xl p-6">
+              <div className="space-y-4">
+                {progress.recent_activity.map((activity, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-3 rounded-lg bg-white/5">
+                    <div className={`w-3 h-3 rounded-full ${
+                      activity.type === 'video_watched' ? 'bg-blue-400' : 'bg-green-400'
+                    }`}></div>
+                    <div className="flex-1">
+                      <p className="text-gray-300">{activity.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(activity.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
       </section>
     </div>
   )

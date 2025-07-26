@@ -14,6 +14,8 @@ from sqlalchemy.orm import Session
 from services.youtube_service import YouTubeService
 from services.ai_service import AIService
 from services.auth_service import AuthService
+from services.progress_service import ProgressService
+from services.notes_service import NotesService
 from models.database import get_db, create_tables, User
 
 # Load environment variables
@@ -75,6 +77,8 @@ else:
 youtube_service = YouTubeService()
 ai_service = AIService()
 auth_service = AuthService()
+progress_service = ProgressService()
+notes_service = NotesService()
 
 # Security
 security = HTTPBearer()
@@ -252,7 +256,8 @@ async def analyze_video(request: VideoAnalysisRequest, current_user: User = Depe
         # Generate AI summary
         ai_summary = ai_service.generate_summary(mock_transcript, metadata['title'])
         
-        return {
+        # Prepare response data
+        response_data = {
             "title": metadata['title'],
             "channel": metadata['channel'],
             "duration": metadata['duration'],
@@ -263,6 +268,25 @@ async def analyze_video(request: VideoAnalysisRequest, current_user: User = Depe
             "view_count": metadata.get('view_count'),
             "like_count": metadata.get('like_count')
         }
+        
+        # Record video watched for progress tracking
+        try:
+            progress_service.record_video_watched(
+                db=next(get_db()),
+                user_id=current_user.id,
+                video_data={
+                    'video_id': video_id,
+                    'title': metadata['title'],
+                    'channel': metadata['channel'],
+                    'duration': metadata['duration'],
+                    'summary': ai_summary['summary']
+                }
+            )
+        except Exception as e:
+            print(f"Error recording video progress: {e}")
+            # Don't fail the request if progress recording fails
+        
+        return response_data
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -316,6 +340,127 @@ async def get_video_metadata(video_id: str):
     try:
         metadata = youtube_service.get_video_metadata(video_id)
         return metadata
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Progress tracking endpoints
+@app.get("/progress")
+async def get_user_progress(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get user's learning progress and statistics"""
+    try:
+        progress = progress_service.get_user_progress(db, current_user.id)
+        return progress
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/progress/insights")
+async def get_learning_insights(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get personalized learning insights and recommendations"""
+    try:
+        insights = progress_service.get_learning_insights(db, current_user.id)
+        return insights
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/progress/record-video")
+async def record_video_watched(video_data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Record that a user watched a video"""
+    try:
+        success = progress_service.record_video_watched(db, current_user.id, video_data)
+        if success:
+            return {"message": "Video watched recorded successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to record video watched")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/progress/record-quiz")
+async def record_quiz_result(quiz_data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Record quiz results"""
+    try:
+        success = progress_service.record_quiz_result(
+            db, 
+            current_user.id, 
+            quiz_data.get('video_id'),
+            quiz_data.get('score'),
+            quiz_data.get('total_questions')
+        )
+        if success:
+            return {"message": "Quiz result recorded successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to record quiz result")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Notes endpoints
+@app.post("/notes")
+async def create_note(note_data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Create a new note"""
+    try:
+        note = notes_service.create_note(
+            db=db,
+            user_id=current_user.id,
+            video_id=note_data.get('video_id'),
+            content=note_data.get('content'),
+            title=note_data.get('title')
+        )
+        return note
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/notes")
+async def get_notes(video_id: str = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get user's notes, optionally filtered by video"""
+    try:
+        notes = notes_service.get_user_notes(db, current_user.id, video_id)
+        return {"notes": notes}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/notes/{note_id}")
+async def get_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get a specific note"""
+    try:
+        note = notes_service.get_note_by_id(db, current_user.id, note_id)
+        if not note:
+            raise HTTPException(status_code=404, detail="Note not found")
+        return note
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/notes/{note_id}")
+async def update_note(note_id: int, note_data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Update a note"""
+    try:
+        note = notes_service.update_note(
+            db=db,
+            user_id=current_user.id,
+            note_id=note_id,
+            content=note_data.get('content'),
+            title=note_data.get('title')
+        )
+        return note
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/notes/{note_id}")
+async def delete_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Delete a note"""
+    try:
+        success = notes_service.delete_note(db, current_user.id, note_id)
+        if success:
+            return {"message": "Note deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Note not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/notes/search/{query}")
+async def search_notes(query: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Search notes by content or title"""
+    try:
+        notes = notes_service.search_notes(db, current_user.id, query)
+        return {"notes": notes}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
