@@ -16,6 +16,9 @@ def build_frontend():
     frontend_dir = Path("frontend")
     dist_dir = frontend_dir / "dist"
     
+    print(f"Checking frontend directory: {frontend_dir.absolute()}")
+    print(f"Checking dist directory: {dist_dir.absolute()}")
+    
     if not dist_dir.exists():
         print("Building frontend...")
         try:
@@ -27,6 +30,15 @@ def build_frontend():
         except subprocess.CalledProcessError as e:
             print(f"Error building frontend: {e}")
             return False
+    else:
+        print("Frontend dist directory already exists!")
+    
+    # List contents of dist directory
+    if dist_dir.exists():
+        print("Contents of dist directory:")
+        for item in dist_dir.iterdir():
+            print(f"  - {item.name}")
+    
     return True
 
 def start_backend():
@@ -45,6 +57,7 @@ def start_backend():
 def main():
     """Main entry point - build frontend and start backend"""
     print("Zyndle AI - Starting application...")
+    print(f"Current working directory: {os.getcwd()}")
     
     # Build frontend first
     if not build_frontend():
