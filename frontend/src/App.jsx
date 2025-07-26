@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Play, Brain, MessageCircle, BookOpen, Zap, ChevronRight } from 'lucide-react'
 import authService from './authService'
+import ZyndleLogo from './components/ZyndleLogo'
 // import './App.css'
 
 function App() {
@@ -127,10 +128,7 @@ function App() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-2"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <Brain className="w-5 h-5" />
-              </div>
-              <span className="text-xl font-bold text-gradient">Zyndle AI</span>
+              <ZyndleLogo />
             </motion.div>
             
             <motion.button
@@ -213,10 +211,7 @@ function App() {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-2"
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold text-gradient">Zyndle AI</span>
+            <ZyndleLogo />
           </motion.div>
           
           <motion.div
@@ -971,10 +966,7 @@ function AuthPage({ mode, onSuccess, onBack }) {
             ← Back to Home
           </button>
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold text-gradient">Zyndle AI</span>
+            <ZyndleLogo />
           </div>
         </div>
 
@@ -1080,10 +1072,7 @@ function DemoPage({ onBack }) {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-2"
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold text-gradient">Zyndle AI</span>
+            <ZyndleLogo />
           </motion.div>
           
           <motion.button
@@ -1233,10 +1222,7 @@ function ProgressDashboard({ onBack }) {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-2"
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold text-gradient">Zyndle AI</span>
+            <ZyndleLogo />
           </motion.div>
           
           <motion.button
