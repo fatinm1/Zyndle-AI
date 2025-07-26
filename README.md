@@ -35,7 +35,9 @@ Zyndle AI is an AI-powered web application that transforms any YouTube video int
 - **LangChain** for AI orchestration
 - **ChromaDB** for vector search
 - **PostgreSQL** for data persistence
-- **Whisper** for video transcription
+- **Whisper** for real-time video transcription
+- **yt-dlp** for video downloading
+- **FFmpeg** for audio processing
 
 ## 🚀 Quick Start
 
@@ -83,6 +85,21 @@ Zyndle AI is an AI-powered web application that transforms any YouTube video int
    YOUTUBE_API_KEY=your_youtube_api_key_here
    DATABASE_URL=your_database_url_here
    ```
+   
+   **Note**: The YouTube API key is optional. If not provided, the system will use yt-dlp to fetch video metadata.
+
+5. **System Dependencies**
+   The backend requires FFmpeg for audio processing:
+   
+   **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH
+   
+   **macOS**: `brew install ffmpeg`
+   
+   **Linux**: `sudo apt-get install ffmpeg`
+   
+   Or run the installation scripts:
+   - Windows: `install_dependencies.bat`
+   - macOS/Linux: `./install_dependencies.sh`
 
 ## 📖 Usage
 
@@ -139,13 +156,29 @@ python main.py       # Start development server
 ### API Documentation
 Once the backend is running, visit `http://localhost:8000/docs` for interactive API documentation.
 
+### Testing the Video Analysis
+To test the new video transcription functionality:
+
+```bash
+cd backend
+python test_transcription.py
+```
+
+This will test:
+- Video metadata extraction
+- Video downloading and transcription
+- Service integration
+
+**Note**: The transcription test will download and process a real video, which may take several minutes.
+
 ## 🎯 Roadmap
 
 ### Phase 1 (Current)
 - ✅ Landing page with YouTube input
-- ✅ Video analysis and summarization
-- ✅ Basic chatbot functionality
-- ✅ Quiz generation
+- ✅ Real video analysis and summarization
+- ✅ Video downloading and transcription
+- ✅ AI-powered chatbot functionality
+- ✅ Interactive quiz generation
 - ✅ Modern UI with dark theme
 
 ### Phase 2 (Next)

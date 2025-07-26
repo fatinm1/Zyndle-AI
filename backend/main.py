@@ -16,6 +16,7 @@ from services.ai_service import AIService
 from services.auth_service import AuthService
 from services.progress_service import ProgressService
 from services.notes_service import NotesService
+from services.transcription_service import TranscriptionService
 from models.database import get_db, create_tables, User
 
 # Load environment variables
@@ -79,6 +80,7 @@ ai_service = AIService()
 auth_service = AuthService()
 progress_service = ProgressService()
 notes_service = NotesService()
+transcription_service = TranscriptionService()
 
 # Security
 security = HTTPBearer()
@@ -175,7 +177,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "services": {"youtube": "available", "ai": "available"}}
+    return {
+        "status": "healthy", 
+        "services": {
+            "youtube": "available", 
+            "ai": "available",
+            "transcription": "available" if transcription_service.model else "loading"
+        }
+    }
 
 # Authentication endpoints
 @app.post("/auth/register", response_model=Token)
@@ -250,11 +259,16 @@ async def analyze_video(request: VideoAnalysisRequest, current_user: User = Depe
         # Get video metadata
         metadata = youtube_service.get_video_metadata(video_id)
         
-        # Generate mock transcript (in production, you'd use Whisper or similar)
-        mock_transcript = f"This is a transcript for {metadata['title']}. The video covers important concepts and provides valuable insights for learners."
+        # Get real transcript using transcription service
+        transcript = youtube_service.get_video_transcript(video_id)
         
-        # Generate AI summary
-        ai_summary = ai_service.generate_summary(mock_transcript, metadata['title'])
+        # Fallback to mock transcript if real transcription fails
+        if not transcript:
+            print(f"Warning: Failed to get real transcript for video {video_id}, using mock transcript")
+            transcript = f"This is a transcript for {metadata['title']}. The video covers important concepts and provides valuable insights for learners."
+        
+        # Generate AI summary based on real transcript
+        ai_summary = ai_service.generate_summary(transcript, metadata['title'])
         
         # Prepare response data
         response_data = {
@@ -263,7 +277,7 @@ async def analyze_video(request: VideoAnalysisRequest, current_user: User = Depe
             "duration": metadata['duration'],
             "summary": ai_summary['summary'],
             "chapters": ai_summary['chapters'],
-            "transcript": mock_transcript,
+            "transcript": transcript,
             "thumbnail": metadata.get('thumbnail'),
             "view_count": metadata.get('view_count'),
             "like_count": metadata.get('like_count')
@@ -340,6 +354,22 @@ async def get_video_metadata(video_id: str):
     try:
         metadata = youtube_service.get_video_metadata(video_id)
         return metadata
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/videos/{video_id}/transcript")
+async def get_video_transcript(video_id: str, current_user: User = Depends(get_current_user)):
+    """Get transcript for a specific video (for testing)"""
+    try:
+        transcript = youtube_service.get_video_transcript(video_id)
+        if transcript:
+            return {
+                "video_id": video_id,
+                "transcript": transcript,
+                "length": len(transcript)
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Transcript not available")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
