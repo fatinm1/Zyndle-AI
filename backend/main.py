@@ -199,7 +199,22 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             self.email = "demo@example.com"
             self.full_name = "Demo User"
     
-    return MockUser()
+    # If no credentials provided, still return mock user
+    if not credentials:
+        return MockUser()
+    
+    # If credentials provided, validate the token (simplified)
+    try:
+        # For now, accept any token that starts with "mock_token"
+        if credentials.credentials and credentials.credentials.startswith("mock_token"):
+            return MockUser()
+        else:
+            # Return mock user anyway for now
+            return MockUser()
+    except Exception as e:
+        print(f"Token validation error: {e}")
+        # Return mock user anyway for now
+        return MockUser()
 
 @app.get("/health")
 async def health_check():
@@ -271,24 +286,38 @@ async def get_current_user_info(current_user = Depends(get_current_user)):
         "created_at": "2024-01-01T00:00:00Z"
     }
 
+@app.post("/auth/logout")
+async def logout():
+    """Logout user (simplified version)"""
+    return {"message": "Logged out successfully"}
+
 @app.post("/analyze", response_model=VideoAnalysisResponse)
 async def analyze_video(request: VideoAnalysisRequest, current_user = Depends(get_current_user)):
     """Analyze a YouTube video and return summary, chapters, and transcript"""
     try:
+        print(f"Analyzing video: {request.youtube_url}")
+        print(f"Current user: {current_user.email}")
+        
         if not youtube_service:
+            print("YouTube service not available")
             raise HTTPException(status_code=500, detail="YouTube service not available")
         
         # Extract video ID from URL
         video_id = youtube_service.extract_video_id(request.youtube_url)
         if not video_id:
+            print(f"Invalid YouTube URL: {request.youtube_url}")
             raise HTTPException(status_code=400, detail="Invalid YouTube URL")
+        
+        print(f"Extracted video ID: {video_id}")
         
         # Get video metadata
         metadata = youtube_service.get_video_metadata(video_id)
+        print(f"Got metadata: {metadata.get('title', 'Unknown')}")
         
         # Get real transcript using transcription service
         transcript = None
         if transcription_service:
+            print("Attempting to get real transcript...")
             transcript = youtube_service.get_video_transcript(video_id)
         
         # Fallback to mock transcript if real transcription fails
@@ -299,8 +328,10 @@ async def analyze_video(request: VideoAnalysisRequest, current_user = Depends(ge
         # Generate AI summary based on real transcript
         ai_summary = None
         if ai_service:
+            print("Generating AI summary...")
             ai_summary = ai_service.generate_summary(transcript, metadata['title'])
         else:
+            print("AI service not available, using mock summary")
             # Fallback mock summary
             ai_summary = {
                 "summary": f"This video covers important concepts related to {metadata['title']}. The content is well-structured and provides valuable insights for learners.",
@@ -325,8 +356,10 @@ async def analyze_video(request: VideoAnalysisRequest, current_user = Depends(ge
             "like_count": metadata.get('like_count')
         }
         
+        print(f"Returning response with title: {response_data['title']}")
         return response_data
     except Exception as e:
+        print(f"Error in analyze_video: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/chat", response_model=ChatResponse)
