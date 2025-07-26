@@ -16,7 +16,8 @@ try:
     from services.auth_service import AuthService
     from services.progress_service import ProgressService
     from services.notes_service import NotesService
-    from services.transcription_service import TranscriptionService
+    # Note: transcription_service requires heavy dependencies, so we'll handle it separately
+    TranscriptionService = None
     from models.database import get_db, create_tables, User
     print("✅ All imports successful")
 except ImportError as e:

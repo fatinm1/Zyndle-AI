@@ -1,20 +1,21 @@
 # Use Python base image
 FROM python:3.11-slim
 
-# Install Node.js, npm, and FFmpeg
+# Install Node.js and npm in a single layer to reduce size
 RUN apt-get update && apt-get install -y \
     curl \
-    ffmpeg \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
 # Set working directory
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY backend/requirements.txt .
+COPY backend/requirements-deploy.txt ./requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt

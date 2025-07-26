@@ -2,12 +2,21 @@ import re
 import requests
 from typing import Dict, Optional
 import os
-from .transcription_service import TranscriptionService
+# Try to import transcription service, but don't fail if it's not available
+try:
+    from .transcription_service import TranscriptionService
+    TRANSCRIPTION_AVAILABLE = True
+except ImportError:
+    TranscriptionService = None
+    TRANSCRIPTION_AVAILABLE = False
 
 class YouTubeService:
     def __init__(self):
         self.api_key = os.getenv('YOUTUBE_API_KEY')
-        self.transcription_service = TranscriptionService()
+        if TRANSCRIPTION_AVAILABLE:
+            self.transcription_service = TranscriptionService()
+        else:
+            self.transcription_service = None
     
     def extract_video_id(self, url: str) -> str:
         """Extract video ID from various YouTube URL formats"""
