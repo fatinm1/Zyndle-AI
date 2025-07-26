@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ZyndleLogo = ({ size = 32, className = "" }) => {
+const ZyndleLogo = ({ size = 40, className = "" }) => {
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <svg 
@@ -72,4 +72,4 @@ const ZyndleLogo = ({ size = 32, className = "" }) => {
   )
 }
 
-export default ZyndleLogo 
+export default ZyndleLogo
