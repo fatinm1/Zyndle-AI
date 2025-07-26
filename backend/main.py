@@ -333,7 +333,12 @@ async def analyze_video(request: VideoAnalysisRequest, current_user = Depends(ge
         # Get video metadata
         metadata = None
         if youtube_service:
+            print("Getting real video metadata...")
             metadata = youtube_service.get_video_metadata(video_id)
+            if metadata and metadata.get('title') != 'Unknown Title':
+                print(f"✅ Got real metadata: {metadata['title']}")
+            else:
+                print("⚠️ Using fallback metadata")
         else:
             # Fallback mock metadata
             metadata = {
@@ -361,11 +366,18 @@ async def analyze_video(request: VideoAnalysisRequest, current_user = Depends(ge
         
         # Generate AI summary based on real transcript
         ai_summary = None
-        if ai_service:
-            print("Generating AI summary...")
+        if ai_service and ai_service.has_api_key:
+            print("Generating AI summary with OpenAI...")
             ai_summary = ai_service.generate_summary(transcript, metadata['title'])
+            if ai_summary and 'summary' in ai_summary:
+                print("✅ Generated real AI summary")
+            else:
+                print("⚠️ AI summary failed, using fallback")
+                ai_summary = None
         else:
-            print("AI service not available, using mock summary")
+            print("AI service not available or no API key, using mock summary")
+        
+        if not ai_summary:
             # Fallback mock summary
             ai_summary = {
                 "summary": f"This video covers important concepts related to {metadata['title']}. The content is well-structured and provides valuable insights for learners.",
@@ -400,7 +412,7 @@ async def analyze_video(request: VideoAnalysisRequest, current_user = Depends(ge
 async def chat_with_video(request: ChatRequest):
     """Ask questions about a specific video"""
     try:
-        if not ai_service:
+        if not ai_service or not ai_service.has_api_key:
             # Fallback mock response
             return ChatResponse(
                 answer="I'm sorry, the AI service is currently unavailable. Please try again later.",
@@ -408,10 +420,11 @@ async def chat_with_video(request: ChatRequest):
                 confidence="low"
             )
         
+        print(f"Generating AI chat response for: {request.question}")
         # Generate AI response
         response = ai_service.chat_with_video(
-            request.question, 
-            request.transcript, 
+            request.question,
+            request.transcript,
             request.summary
         )
         
@@ -427,7 +440,7 @@ async def chat_with_video(request: ChatRequest):
 async def generate_quiz(request: QuizRequest):
     """Generate quiz questions based on video content"""
     try:
-        if not ai_service:
+        if not ai_service or not ai_service.has_api_key:
             # Fallback mock quiz
             questions = [
                 QuizQuestion(
@@ -439,10 +452,11 @@ async def generate_quiz(request: QuizRequest):
             ]
             return QuizResponse(questions=questions)
         
+        print(f"Generating AI quiz with {request.num_questions} questions...")
         # Generate AI quiz questions
         questions = ai_service.generate_quiz(
-            request.transcript, 
-            request.summary, 
+            request.transcript,
+            request.summary,
             request.num_questions
         )
         
