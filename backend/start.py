@@ -9,8 +9,9 @@ import sys
 import uvicorn
 from pathlib import Path
 
-# Add the current directory to Python path
-sys.path.append(str(Path(__file__).parent))
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
 
 def main():
     """Main startup function"""
@@ -34,7 +35,7 @@ def main():
     # Start the server
     try:
         uvicorn.run(
-            "main:app",
+            "backend.main:app",
             host=host,
             port=port,
             reload=False,  # Disable reload in production
