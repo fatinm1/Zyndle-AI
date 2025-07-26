@@ -236,7 +236,7 @@ function App() {
                   onClick={() => setShowVideoInput(true)}
                   className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                 >
-                  Input Video
+                  Continue Analysis
                 </button>
                 <button
                   onClick={() => {
@@ -293,7 +293,7 @@ function App() {
                   className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
                 >
                   <Play className="w-5 h-5" />
-                  <span>Input Video</span>
+                  <span>Continue Analysis</span>
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -436,7 +436,7 @@ function App() {
                   onClick={() => setShowVideoInput(true)}
                   className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
                 >
-                  <span>Input New Video</span>
+                  <span>Continue Analysis</span>
                   <ChevronRight className="w-5 h-5" />
                 </motion.button>
               </>
