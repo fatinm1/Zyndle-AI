@@ -489,7 +489,8 @@ function VideoWorkspace({ videoData, onBack }) {
           question: chatMessage, 
           video_id: 'sample',
           transcript: videoData.transcript,
-          summary: videoData.summary
+          summary: videoData.summary,
+          title: videoData.title || ''
         }),
       })
       
@@ -518,6 +519,7 @@ function VideoWorkspace({ videoData, onBack }) {
           video_id: 'sample',
           transcript: videoData.transcript,
           summary: videoData.summary,
+          title: videoData.title || '',
           num_questions: 5
         }),
       })

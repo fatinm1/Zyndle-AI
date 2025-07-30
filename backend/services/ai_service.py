@@ -73,10 +73,10 @@ class AIService:
         """Generate a contextual response based on the video content"""
         try:
             if not self.client:
-                return self._get_mock_chat_response(question)
+                return self._get_enhanced_mock_chat_response(question, transcript, summary)
             
             if not self.client.api_key:
-                return self._get_mock_chat_response(question)
+                return self._get_enhanced_mock_chat_response(question, transcript, summary)
             
             prompt = f"""
             Based on this video content, answer the user's question.
@@ -99,11 +99,11 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are a helpful AI tutor. Answer questions based on the provided video content."},
+                    {"role": "system", "content": "You are an expert educational assistant. Provide clear, helpful answers based on the video content."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
-                max_tokens=500
+                max_tokens=1000
             )
             
             result = response.choices[0].message.content
@@ -113,17 +113,17 @@ class AIService:
             print(f"Error generating chat response: {e}")
             if "insufficient_quota" in str(e) or "429" in str(e):
                 print("⚠️ OpenAI API quota exceeded. Using enhanced mock chat response.")
-                return self._get_enhanced_mock_chat_response(question)
-            return self._get_mock_chat_response(question)
+                return self._get_enhanced_mock_chat_response(question, transcript, summary)
+            return self._get_enhanced_mock_chat_response(question, transcript, summary)
     
     def generate_quiz(self, transcript: str, summary: str, num_questions: int = 5) -> List[Dict]:
         """Generate quiz questions based on the video content"""
         try:
             if not self.client:
-                return self._get_mock_quiz_questions(num_questions)
+                return self._get_enhanced_mock_quiz_questions(num_questions, transcript, summary)
             
             if not self.client.api_key:
-                return self._get_mock_quiz_questions(num_questions)
+                return self._get_enhanced_mock_quiz_questions(num_questions, transcript, summary)
             
             prompt = f"""
             Create {num_questions} multiple choice questions based on this video content.
@@ -164,8 +164,8 @@ class AIService:
             print(f"Error generating quiz: {e}")
             if "insufficient_quota" in str(e) or "429" in str(e):
                 print("⚠️ OpenAI API quota exceeded. Using enhanced mock quiz.")
-                return self._get_enhanced_mock_quiz_questions(num_questions)
-            return self._get_mock_quiz_questions(num_questions)
+                return self._get_enhanced_mock_quiz_questions(num_questions, transcript, summary)
+            return self._get_enhanced_mock_quiz_questions(num_questions, transcript, summary)
     
     def _get_mock_summary(self, title: str) -> Dict:
         """Return mock summary for development"""
@@ -248,94 +248,178 @@ class AIService:
             ]
         }
     
-    def _get_enhanced_mock_chat_response(self, question: str) -> Dict:
+    def _get_enhanced_mock_chat_response(self, question: str, transcript: str = "", summary: str = "", title: str = "") -> Dict:
         """Generate an enhanced mock chat response when API quota is exceeded"""
-        # Better context-aware responses
+        # Extract topic from video title or content
+        topic = self._extract_topic_from_content(title, summary, transcript)
+        
         question_lower = question.lower()
         
-        if "what is" in question_lower and "about" in question_lower:
+        # Generate context-aware responses based on the actual video topic
+        if "what is" in question_lower and ("about" in question_lower or "topic" in question_lower):
             return {
-                "answer": "This video covers nuclear physics concepts, specifically nuclear decay processes and energy calculations. It explains how radioactive elements transform and release energy, including the mathematical relationships and practical applications in fields like medicine and energy production.",
-                "sources": ["Video content", "Nuclear physics principles"],
+                "answer": f"This video covers {topic} concepts and provides valuable insights for learners. It explains key principles, practical applications, and important takeaways that can help you understand the subject better.",
+                "sources": ["Video content", f"{topic} principles"],
                 "confidence": "high"
             }
-        elif "energy" in question_lower or "enegry" in question_lower:
+        elif "main" in question_lower and ("point" in question_lower or "concept" in question_lower):
             return {
-                "answer": "Energy in nuclear reactions refers to the energy released or absorbed during nuclear decay processes. This includes binding energy, mass-energy equivalence (E=mc²), and the energy released during radioactive decay. The video explains how to calculate these energy changes using nuclear physics formulas.",
-                "sources": ["Nuclear physics", "Energy conservation principles"],
+                "answer": f"The main concepts in this {topic} video include fundamental principles, practical applications, and real-world examples. The video breaks down complex ideas into understandable components.",
+                "sources": [f"{topic} fundamentals", "Video explanations"],
                 "confidence": "high"
             }
-        elif "decay" in question_lower:
+        elif "explain" in question_lower or "how" in question_lower:
             return {
-                "answer": "Nuclear decay is the process by which unstable atomic nuclei transform into more stable forms, releasing radiation and energy. Common types include alpha decay, beta decay, and gamma decay. Each type follows specific conservation laws and has characteristic energy signatures.",
-                "sources": ["Nuclear physics", "Radioactive decay theory"],
-                "confidence": "high"
+                "answer": f"This {topic} video explains concepts through step-by-step demonstrations, clear examples, and practical applications. It shows how theoretical knowledge applies to real-world situations.",
+                "sources": [f"{topic} theory", "Practical demonstrations"],
+                "confidence": "medium"
             }
         else:
             return {
-                "answer": "This video covers nuclear physics concepts including decay processes, energy calculations, and their applications. If you have a specific question about nuclear reactions, energy calculations, or radioactive decay, I'd be happy to help explain those concepts in detail.",
-                "sources": ["Video content", "Nuclear physics"],
+                "answer": f"This video covers {topic} concepts including fundamental principles, practical applications, and best practices. If you have specific questions about {topic}, I'd be happy to help explain those concepts in detail.",
+                "sources": ["Video content", f"{topic} concepts"],
                 "confidence": "medium"
             }
     
-    def _get_enhanced_mock_quiz_questions(self, num_questions: int) -> List[Dict]:
+    def _get_enhanced_mock_quiz_questions(self, num_questions: int, transcript: str = "", summary: str = "", title: str = "") -> List[Dict]:
         """Generate enhanced mock quiz questions when API quota is exceeded"""
-        questions = [
+        # Extract topic from video content
+        topic = self._extract_topic_from_content(title, summary, transcript)
+        
+        # Generate topic-specific questions
+        questions = self._generate_topic_specific_questions(topic, num_questions)
+        
+        return questions[:num_questions]
+    
+    def _extract_topic_from_content(self, title: str, summary: str, transcript: str) -> str:
+        """Extract the main topic from video content"""
+        # Combine all text for analysis
+        all_text = f"{title} {summary} {transcript}".lower()
+        
+        # Define topic keywords
+        topics = {
+            "Physics": ["physics", "force", "energy", "motion", "gravity", "nuclear", "quantum", "mechanics"],
+            "Chemistry": ["chemistry", "chemical", "reaction", "molecule", "atom", "bond", "acid", "base"],
+            "Mathematics": ["math", "mathematics", "algebra", "calculus", "equation", "formula", "geometry", "trigonometry"],
+            "Biology": ["biology", "cell", "organism", "evolution", "genetics", "ecosystem", "species"],
+            "Computer Science": ["programming", "code", "algorithm", "software", "computer", "data", "artificial intelligence", "machine learning"],
+            "History": ["history", "historical", "ancient", "civilization", "war", "empire", "culture"],
+            "Literature": ["literature", "book", "novel", "poetry", "author", "writing", "story"],
+            "Economics": ["economics", "economy", "market", "finance", "business", "trade", "money"],
+            "Psychology": ["psychology", "mind", "behavior", "mental", "cognitive", "therapy"],
+            "Engineering": ["engineering", "design", "construction", "mechanical", "electrical", "civil"]
+        }
+        
+        # Find the most relevant topic
+        best_topic = "General Education"
+        max_matches = 0
+        
+        for topic, keywords in topics.items():
+            matches = sum(1 for keyword in keywords if keyword in all_text)
+            if matches > max_matches:
+                max_matches = matches
+                best_topic = topic
+        
+        return best_topic
+    
+    def _generate_topic_specific_questions(self, topic: str, num_questions: int) -> List[Dict]:
+        """Generate questions specific to the detected topic"""
+        question_templates = {
+            "Physics": [
+                {
+                    "question": "What is the main principle discussed in this physics video?",
+                    "options": ["Energy conservation", "Force and motion", "Wave phenomena", "Thermodynamics"],
+                    "correct_answer": 0,
+                    "explanation": "Physics videos often focus on fundamental principles like energy conservation and its applications."
+                },
+                {
+                    "question": "Which of the following is a key concept in physics?",
+                    "options": ["Chemical bonding", "Mathematical equations", "Biological processes", "Historical events"],
+                    "correct_answer": 1,
+                    "explanation": "Physics relies heavily on mathematical equations to describe natural phenomena."
+                }
+            ],
+            "Chemistry": [
+                {
+                    "question": "What type of reaction is most likely discussed in this chemistry video?",
+                    "options": ["Chemical bonding", "Nuclear fusion", "Biological process", "Physical change"],
+                    "correct_answer": 0,
+                    "explanation": "Chemistry videos typically focus on chemical reactions and bonding between atoms."
+                },
+                {
+                    "question": "Which concept is fundamental to understanding chemistry?",
+                    "options": ["Atomic structure", "Gravity", "Evolution", "Programming"],
+                    "correct_answer": 0,
+                    "explanation": "Understanding atomic structure is essential for all chemical concepts."
+                }
+            ],
+            "Mathematics": [
+                {
+                    "question": "What mathematical concept is likely the focus of this video?",
+                    "options": ["Problem-solving methods", "Chemical reactions", "Historical events", "Biological processes"],
+                    "correct_answer": 0,
+                    "explanation": "Mathematics videos typically focus on problem-solving techniques and methods."
+                },
+                {
+                    "question": "Which is essential for mathematical understanding?",
+                    "options": ["Logical reasoning", "Chemical formulas", "Historical dates", "Biological terms"],
+                    "correct_answer": 0,
+                    "explanation": "Logical reasoning is fundamental to all mathematical concepts and problem-solving."
+                }
+            ],
+            "Computer Science": [
+                {
+                    "question": "What programming concept is likely discussed in this video?",
+                    "options": ["Algorithm design", "Chemical reactions", "Historical events", "Biological processes"],
+                    "correct_answer": 0,
+                    "explanation": "Computer science videos often focus on algorithm design and programming concepts."
+                },
+                {
+                    "question": "Which is a key skill in computer science?",
+                    "options": ["Problem-solving", "Chemical analysis", "Historical research", "Biological observation"],
+                    "correct_answer": 0,
+                    "explanation": "Problem-solving is essential for programming and algorithm development."
+                }
+            ],
+            "Biology": [
+                {
+                    "question": "What biological concept is likely the main topic?",
+                    "options": ["Cell structure", "Chemical equations", "Mathematical formulas", "Historical events"],
+                    "correct_answer": 0,
+                    "explanation": "Biology videos often focus on cellular and organismal structures and processes."
+                },
+                {
+                    "question": "Which is fundamental to biological understanding?",
+                    "options": ["Evolution", "Chemical bonding", "Mathematical proofs", "Historical dates"],
+                    "correct_answer": 0,
+                    "explanation": "Evolution is a fundamental concept that explains biological diversity."
+                }
+            ]
+        }
+        
+        # Get questions for the detected topic, or use general questions as fallback
+        questions = question_templates.get(topic, [
             {
-                "question": "What is nuclear decay?",
-                "options": [
-                    "The process of atoms splitting apart",
-                    "The transformation of unstable nuclei into stable ones",
-                    "The fusion of two atomic nuclei",
-                    "The creation of new elements in stars"
-                ],
-                "correct_answer": 1,
-                "explanation": "Nuclear decay is the spontaneous transformation of unstable atomic nuclei into more stable forms, releasing radiation and energy."
-            },
-            {
-                "question": "Which equation relates mass and energy in nuclear reactions?",
-                "options": [
-                    "E = mc²",
-                    "F = ma",
-                    "PV = nRT",
-                    "KE = ½mv²"
-                ],
+                "question": "What is the main topic of this educational video?",
+                "options": ["Learning concepts", "Entertainment", "Sports", "Music"],
                 "correct_answer": 0,
-                "explanation": "Einstein's famous equation E = mc² shows the relationship between mass and energy, crucial for understanding nuclear reactions."
+                "explanation": "Educational videos focus on teaching and learning concepts."
             },
             {
-                "question": "What type of radiation is emitted during alpha decay?",
-                "options": [
-                    "Helium nuclei",
-                    "Electrons",
-                    "Gamma rays",
-                    "Neutrons"
-                ],
+                "question": "Which approach is most effective for learning from this video?",
+                "options": ["Active engagement", "Passive watching", "Multitasking", "Skipping parts"],
                 "correct_answer": 0,
-                "explanation": "Alpha decay emits helium nuclei (alpha particles), which consist of 2 protons and 2 neutrons."
-            },
-            {
-                "question": "How does binding energy relate to nuclear stability?",
-                "options": [
-                    "Higher binding energy means less stability",
-                    "Higher binding energy means more stability",
-                    "Binding energy has no effect on stability",
-                    "Only mass affects nuclear stability"
-                ],
-                "correct_answer": 1,
-                "explanation": "Higher binding energy per nucleon indicates greater nuclear stability, as more energy is required to break the nucleus apart."
-            },
-            {
-                "question": "What is the half-life of a radioactive element?",
-                "options": [
-                    "The time for all atoms to decay",
-                    "The time for half the atoms to decay",
-                    "The time for one atom to decay",
-                    "The total lifetime of the element"
-                ],
-                "correct_answer": 1,
-                "explanation": "Half-life is the time required for half of the radioactive atoms in a sample to decay."
+                "explanation": "Active engagement helps you retain and understand the material better."
             }
-        ]
+        ])
+        
+        # Ensure we have enough questions
+        while len(questions) < num_questions:
+            questions.append({
+                "question": f"What is an important concept in {topic}?",
+                "options": ["Fundamental principles", "Advanced techniques", "Basic concepts", "All of the above"],
+                "correct_answer": 3,
+                "explanation": f"Understanding fundamental principles, basic concepts, and advanced techniques are all important in {topic}."
+            })
         
         return questions[:num_questions] 

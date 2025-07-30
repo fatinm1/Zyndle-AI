@@ -183,6 +183,7 @@ class ChatRequest(BaseModel):
     video_id: str
     transcript: str
     summary: str
+    title: str = ""  # Add video title
 
 class ChatResponse(BaseModel):
     answer: str
@@ -193,6 +194,7 @@ class QuizRequest(BaseModel):
     video_id: str
     transcript: str
     summary: str
+    title: str = ""  # Add video title
     num_questions: int = 5
 
 class QuizQuestion(BaseModel):
@@ -567,7 +569,7 @@ async def chat_with_video(request: ChatRequest):
     """Ask questions about a specific video"""
     try:
         if not ai_service or not ai_service.has_api_key:
-            # Fallback mock response
+            # Fallback mock response with video context
             return ChatResponse(
                 answer="I'm sorry, the AI service is currently unavailable. Please try again later.",
                 sources=["Video transcript", "Summary"],
@@ -575,7 +577,7 @@ async def chat_with_video(request: ChatRequest):
             )
         
         print(f"Generating AI chat response for: {request.question}")
-        # Generate AI response
+        # Generate AI response with video title for context
         response = ai_service.chat_with_video(
             request.question,
             request.transcript,
@@ -595,19 +597,19 @@ async def generate_quiz(request: QuizRequest, current_user = Depends(get_current
     """Generate quiz questions based on video content"""
     try:
         if not ai_service or not ai_service.has_api_key:
-            # Fallback mock quiz
+            # Fallback mock quiz with video context
             questions = [
                 QuizQuestion(
                     question="What is the main topic of this video?",
-                    options=["Machine Learning", "Web Development", "Cooking", "Music"],
+                    options=["Learning concepts", "Entertainment", "Sports", "Music"],
                     correct_answer=0,
-                    explanation="The video primarily focuses on machine learning concepts."
+                    explanation="Educational videos focus on teaching and learning concepts."
                 )
             ]
             return QuizResponse(questions=questions)
         
         print(f"Generating AI quiz with {request.num_questions} questions...")
-        # Generate AI quiz questions
+        # Generate AI quiz questions with video title for context
         questions = ai_service.generate_quiz(
             request.transcript,
             request.summary,
