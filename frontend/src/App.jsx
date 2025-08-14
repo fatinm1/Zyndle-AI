@@ -11,7 +11,7 @@ function App() {
   const [videoData, setVideoData] = useState(null)
   const [showVideoInput, setShowVideoInput] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
-  const [showDemo, setShowDemo] = useState(false)
+
   const [showProgress, setShowProgress] = useState(false)
   const [authMode, setAuthMode] = useState('signin') // 'signin' or 'register'
   const [demoMode, setDemoMode] = useState(false) // New demo mode state
@@ -54,14 +54,11 @@ function App() {
     setShowAuth(true)
   }
 
-  const handleWatchDemo = () => {
-    setShowDemo(true)
-  }
+
 
   const handleBackToHome = () => {
     setShowVideoInput(false)
     setShowAuth(false)
-    setShowDemo(false)
     setShowProgress(false)
     setVideoData(null)
     setYoutubeUrl('')
@@ -132,9 +129,7 @@ function App() {
     return <AuthPage mode={authMode} onSuccess={handleAuthSuccess} onBack={handleBackToHome} />
   }
 
-  if (showDemo) {
-    return <DemoPage onBack={handleBackToHome} />
-  }
+
 
   if (showProgress) {
     return <ProgressDashboard onBack={handleBackToHome} />
@@ -321,14 +316,6 @@ function App() {
                 >
                   🚀 Try Demo Mode
                 </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleWatchDemo}
-                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
-                >
-                  Watch Demo
-                </motion.button>
               </>
             ) : (
               <>
@@ -348,14 +335,6 @@ function App() {
                   className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
                 >
                   🚀 Try Demo Mode
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleWatchDemo}
-                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
-                >
-                  Watch Demo
                 </motion.button>
               </>
             )}
@@ -1184,33 +1163,10 @@ function AuthPage({ mode, onSuccess, onBack }) {
   )
 }
 
-// Demo Page Component
-function DemoPage({ onBack }) {
-  const [activeDemo, setActiveDemo] = useState('overview')
-  const [chatMessage, setChatMessage] = useState('')
-  const [chatHistory, setChatHistory] = useState([
-    { role: 'assistant', content: "Hello! I'm your AI tutor. I can help you understand any topic from the video. What would you like to know about nuclear physics?" }
-  ])
-  const [quizAnswers, setQuizAnswers] = useState({})
-  const [quizSubmitted, setQuizSubmitted] = useState(false)
-  const [quizScore, setQuizScore] = useState(0)
-  const [notes, setNotes] = useState([
-    { id: 1, title: "Key Nuclear Concepts", content: "Nuclear binding energy, mass defect, and E=mc² relationship are fundamental to understanding nuclear reactions." },
-    { id: 2, title: "Decay Processes", content: "Alpha, beta, and gamma decay each have different characteristics and energy implications." }
-  ])
-  const [newNote, setNewNote] = useState('')
 
-  const handleChat = () => {
-    if (!chatMessage.trim()) return
-    
-    const userMessage = { role: 'user', content: chatMessage }
-    setChatHistory([...chatHistory, userMessage])
-    
-    // Simulate AI response based on the question
-    const aiResponse = generateAIResponse(chatMessage)
-    setChatHistory(prev => [...prev, { role: 'assistant', content: aiResponse }])
-    setChatMessage('')
-  }
+
+
+
 
   const generateAIResponse = (question) => {
     const responses = {
