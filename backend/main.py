@@ -37,6 +37,9 @@ except ImportError as e:
 # Load environment variables
 load_dotenv()
 
+# Force redeploy to pick up new DATABASE_URL environment variable
+# This comment triggers Railway to rebuild and use the new PostgreSQL connection
+
 # Create database tables (only if available)
 if create_tables:
     try:
