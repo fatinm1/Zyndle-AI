@@ -125,7 +125,7 @@ function App() {
   ]
 
   if (videoData) {
-    return <VideoWorkspace videoData={videoData} onBack={handleBackToHome} />
+    return <VideoWorkspace videoData={videoData} onBack={handleBackToHome} demoMode={demoMode} />
   }
 
   if (showAuth) {
@@ -519,7 +519,7 @@ function App() {
 }
 
 // Video Workspace Component
-function VideoWorkspace({ videoData, onBack }) {
+function VideoWorkspace({ videoData, onBack, demoMode }) {
   const [activeTab, setActiveTab] = useState('summary')
   const [chatMessage, setChatMessage] = useState('')
   const [chatHistory, setChatHistory] = useState([])
@@ -712,6 +712,11 @@ function VideoWorkspace({ videoData, onBack }) {
                 ← Back to Home
               </button>
               <h1 className="text-xl font-semibold">{videoData.title}</h1>
+              {demoMode && (
+                <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-medium rounded-full">
+                  🚀 Demo Mode
+                </span>
+              )}
             </div>
             <div className="text-sm text-gray-400">
               {videoData.channel} • {videoData.duration}
@@ -719,6 +724,21 @@ function VideoWorkspace({ videoData, onBack }) {
           </div>
         </div>
       </header>
+
+      {demoMode && (
+        <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-b border-blue-500/30">
+          <div className="container mx-auto px-6 py-4">
+            <div className="text-center">
+              <p className="text-blue-300 font-medium">
+                🎯 Demo Mode: Experience all Zyndle AI features with sample content
+              </p>
+              <p className="text-blue-200 text-sm mt-1">
+                Try the chat, quiz, and notes features below to see how AI enhances learning
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
@@ -801,6 +821,15 @@ function VideoWorkspace({ videoData, onBack }) {
                 <div className="flex flex-col h-full">
                   <h3 className="text-lg font-semibold mb-4">Ask Me Anything</h3>
                   
+                  {demoMode && (
+                    <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                      <p className="text-blue-200 text-sm">
+                        💡 <strong>Demo Tip:</strong> Try asking about "nuclear binding energy", "decay processes", 
+                        or "E=mc²" to see how the AI responds with contextual information from the video content.
+                      </p>
+                    </div>
+                  )}
+                  
                   {/* Chat History */}
                   <div className="flex-1 space-y-4 mb-4 overflow-y-auto">
                     {chatHistory.map((message, index) => (
@@ -844,6 +873,15 @@ function VideoWorkspace({ videoData, onBack }) {
               {activeTab === 'quiz' && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Quiz</h3>
+                  
+                  {demoMode && (
+                    <div className="mb-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+                      <p className="text-green-200 text-sm">
+                        🎯 <strong>Demo Quiz:</strong> Test your knowledge with these AI-generated questions about nuclear physics. 
+                        Each question includes detailed explanations to help you learn.
+                      </p>
+                    </div>
+                  )}
                   
                   {isLoadingQuiz ? (
                     <div className="text-center py-8">
@@ -943,6 +981,16 @@ function VideoWorkspace({ videoData, onBack }) {
               {activeTab === 'notes' && (
                 <div className="flex flex-col h-full">
                   <h3 className="text-lg font-semibold mb-4">Your Notes</h3>
+                  
+                  {demoMode && (
+                    <div className="mb-4 p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg">
+                      <p className="text-purple-200 text-sm">
+                        📝 <strong>Demo Notes:</strong> Experience the note-taking system with pre-loaded sample notes. 
+                        Add your own notes to see how the AI organizes and categorizes your learning content.
+                      </p>
+                    </div>
+                  )}
+                  
                   {isLoadingNotes ? (
                     <div className="text-center py-8">
                       <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
