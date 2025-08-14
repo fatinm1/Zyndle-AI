@@ -100,6 +100,7 @@ frontend_paths = [
     Path("../frontend/dist"),  # Relative to backend
     Path("frontend/dist"),     # Relative to root
     Path("/app/frontend/dist"), # Absolute in container
+    Path("/app/backend/frontend/dist"), # Alternative container path
 ]
 frontend_dist = None
 for path in frontend_paths:
@@ -111,7 +112,7 @@ for path in frontend_paths:
 
 if not frontend_dist:
     print("Frontend dist not found in any expected location")
-    frontend_dist = Path("../frontend/dist")  # Default for fallback
+    frontend_dist = Path("/app/frontend/dist")  # Default for container
 
 if frontend_dist.exists():
     print("Frontend dist found! Setting up static file serving...")
