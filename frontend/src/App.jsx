@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Play, Brain, MessageCircle, BookOpen, Zap, ChevronRight } from 'lucide-react'
+import { Play, Brain, MessageCircle, BookOpen, Zap, ChevronRight, Star } from 'lucide-react'
 import authService from './authService'
 import ZyndleLogo from './components/ZyndleLogo'
 // import './App.css'
@@ -274,158 +274,429 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl mx-auto"
-        >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Turn YouTube into Your{' '}
-            <span className="text-gradient">Personal Tutor</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed">
-            Transform any YouTube video into an interactive learning experience with AI-powered summaries, 
-            quizzes, and personalized tutoring.
-          </p>
+      <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Floating Orbs */}
+          <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-gradient-to-r from-green-400/20 to-blue-400/20 rounded-full blur-xl animate-pulse delay-2000"></div>
+          
+          {/* Animated Grid */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.1)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse"></div>
+        </div>
 
-          {/* CTA Buttons */}
+        <div className="container mx-auto px-6 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="text-center"
           >
-            {authService.isAuthenticated() ? (
-              <>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowVideoInput(true)}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
-                >
-                  <Play className="w-5 h-5" />
-                  <span>Continue Analysis</span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDemoMode}
-                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
-                >
-                  🚀 Try Demo Mode
-                </motion.button>
-              </>
-            ) : (
-              <>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleGetStarted}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
-                >
-                  <Play className="w-5 h-5" />
-                  <span>Start Learning</span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDemoMode}
-                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
-                >
-                  🚀 Try Demo Mode
-                </motion.button>
-              </>
-            )}
+            {/* Enhanced Logo Animation */}
+            <motion.div 
+              initial={{ scale: 0.8, rotate: -5 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="mb-8 flex justify-center"
+            >
+              <div className="relative">
+                <ZyndleLogo />
+                {/* Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+              </div>
+            </motion.div>
+
+            {/* Enhanced Main Headline */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            >
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
+                Transform
+              </span>
+              <br />
+              <span className="text-white">Any YouTube Video</span>
+              <br />
+              <span className="bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Into Learning Magic
+              </span>
+            </motion.h1>
+
+            {/* Enhanced Subtitle */}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.6 }}
+              className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
+            >
+              Experience the future of learning with AI-powered video analysis, 
+              <span className="text-blue-400 font-semibold"> interactive quizzes</span>, 
+              <span className="text-purple-400 font-semibold"> smart summaries</span>, and 
+              <span className="text-green-400 font-semibold"> personalized insights</span>
+            </motion.p>
+
+            {/* Enhanced CTA Buttons */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.9 }}
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+            >
+              {isAuthenticated ? (
+                <>
+                  <motion.button
+                    whileHover={{ 
+                      scale: 1.05,
+                      boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowVideoInput(true)}
+                    className="group relative px-10 py-5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl font-bold text-xl text-white overflow-hidden transition-all duration-300"
+                  >
+                    <span className="relative z-10 flex items-center space-x-3">
+                      <span>Continue Learning</span>
+                      <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    {/* Animated Background */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    {/* Shine Effect */}
+                    <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ 
+                      scale: 1.05,
+                      boxShadow: "0 20px 40px rgba(168, 85, 247, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleDemoMode}
+                    className="group relative px-10 py-5 bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl font-bold text-xl text-white hover:bg-white/20 transition-all duration-300 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center space-x-3">
+                      <span className="text-2xl">🚀</span>
+                      <span>Try Demo Mode</span>
+                    </span>
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  </motion.button>
+                </>
+              ) : (
+                <>
+                  <motion.button
+                    whileHover={{ 
+                      scale: 1.05,
+                      boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleGetStarted}
+                    className="group relative px-10 py-5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl font-bold text-xl text-white overflow-hidden transition-all duration-300"
+                  >
+                    <span className="relative z-10 flex items-center space-x-3">
+                      <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                      <span>Start Learning Free</span>
+                      <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    {/* Animated Background */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    {/* Shine Effect */}
+                    <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ 
+                      scale: 1.05,
+                      boxShadow: "0 20px 40px rgba(168, 85, 247, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleDemoMode}
+                    className="group relative px-10 py-5 bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl font-bold text-xl text-white hover:bg-white/20 transition-all duration-300 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center space-x-3">
+                      <span className="text-2xl">🚀</span>
+                      <span>Try Demo Mode</span>
+                    </span>
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  </motion.button>
+                </>
+              )}
+            </motion.div>
+
+            {/* Enhanced Social Proof */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 1.2 }}
+              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-8 text-gray-400"
+            >
+              <div className="flex items-center space-x-2">
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full border-2 border-gray-900"></div>
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full border-2 border-gray-900"></div>
+                  <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-red-400 rounded-full border-2 border-gray-900"></div>
+                </div>
+                <span className="text-sm">Join 10,000+ learners</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <span className="text-sm">4.9/5 rating</span>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-6 py-20">
+      <section className="container mx-auto px-6 py-20 relative">
+        {/* Background Decoration */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent"></div>
+        
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mb-16"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16 relative z-10"
         >
-          <h2 className="text-4xl font-bold mb-4">Powerful Learning Features</h2>
-          <p className="text-xl text-gray-300">Everything you need to master any topic</p>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-6xl font-bold mb-6"
+          >
+            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Powerful Learning
+            </span>
+            <br />
+            <span className="text-white">Features</span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto"
+          >
+            Everything you need to master any topic with AI-powered intelligence
+          </motion.p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
-              whileHover={{ y: -5 }}
-              className="glass-dark rounded-xl p-6 text-center hover:neon-glow transition-all duration-300"
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 * index }}
+              whileHover={{ 
+                y: -10, 
+                scale: 1.05,
+                transition: { duration: 0.3 }
+              }}
+              className="group relative"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                {feature.icon}
+              {/* Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              
+              <div className="relative glass-dark rounded-2xl p-8 text-center hover:neon-glow transition-all duration-500 border border-white/10 group-hover:border-white/20">
+                {/* Enhanced Icon Container */}
+                <motion.div 
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-20 h-20 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-2xl group-hover:shadow-blue-500/25 transition-all duration-500"
+                >
+                  <div className="text-white text-3xl">
+                    {feature.icon}
+                  </div>
+                </motion.div>
+                
+                <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-blue-400 transition-colors duration-300">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-300 text-lg leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                  {feature.description}
+                </p>
+                
+                {/* Hover Indicator */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full group-hover:w-16 transition-all duration-500"></div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-300">{feature.description}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="container mx-auto px-6 py-20">
+      <section className="container mx-auto px-6 py-20 relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.3),transparent_50%)]"></div>
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="text-center mb-16"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16 relative z-10"
         >
-          <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-          <p className="text-xl text-gray-300">Three simple steps to transform your learning</p>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-6xl font-bold mb-6"
+          >
+            <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+              How It Works
+            </span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto"
+          >
+            Three simple steps to transform your learning experience
+          </motion.p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 relative z-10">
+          {/* Step 1 */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="text-center"
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="group relative text-center"
           >
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-              1
+            {/* Connection Line */}
+            <div className="hidden md:block absolute top-16 right-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-transparent transform translate-x-1/2"></div>
+            
+            <div className="relative">
+              {/* Enhanced Step Circle */}
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
+                className="w-24 h-24 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white shadow-2xl shadow-blue-500/25 group-hover:shadow-2xl group-hover:shadow-purple-500/25 transition-all duration-500"
+              >
+                1
+              </motion.div>
+              
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-blue-400 transition-colors duration-300">
+                Paste YouTube URL
+              </h3>
+              <p className="text-gray-300 text-lg leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                Simply copy and paste any educational YouTube video link into our platform
+              </p>
+              
+              {/* Hover Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Paste YouTube URL</h3>
-            <p className="text-gray-300">Simply copy and paste any educational YouTube video link</p>
           </motion.div>
           
+          {/* Step 2 */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="text-center"
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="group relative text-center"
           >
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-              2
+            {/* Connection Line */}
+            <div className="hidden md:block absolute top-16 left-0 w-full h-0.5 bg-gradient-to-l from-purple-500 to-transparent transform -translate-x-1/2"></div>
+            <div className="hidden md:block absolute top-16 right-0 w-full h-0.5 bg-gradient-to-r from-purple-500 to-transparent transform translate-x-1/2"></div>
+            
+            <div className="relative">
+              {/* Enhanced Step Circle */}
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                transition={{ duration: 0.3 }}
+                className="w-24 h-24 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white shadow-2xl shadow-purple-500/25 group-hover:shadow-2xl group-hover:shadow-pink-500/25 transition-all duration-500"
+              >
+                2
+              </motion.div>
+              
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-purple-400 transition-colors duration-300">
+                AI Analysis
+              </h3>
+              <p className="text-gray-300 text-lg leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                Our AI processes the video to create summaries, identify key topics, and generate insights
+              </p>
+              
+              {/* Hover Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">AI Analysis</h3>
-            <p className="text-gray-300">Our AI processes the video and creates summaries, chapters, and quizzes</p>
           </motion.div>
           
+          {/* Step 3 */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="text-center"
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="group relative text-center"
           >
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-              3
+            {/* Connection Line */}
+            <div className="hidden md:block absolute top-16 left-0 w-full h-0.5 bg-gradient-to-l from-pink-500 to-transparent transform -translate-x-1/2"></div>
+            
+            <div className="relative">
+              {/* Enhanced Step Circle */}
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
+                className="w-24 h-24 bg-gradient-to-r from-pink-500 via-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white shadow-2xl shadow-pink-500/25 group-hover:shadow-2xl group-hover:shadow-red-500/25 transition-all duration-500"
+              >
+                3
+              </motion.div>
+              
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-pink-400 transition-colors duration-300">
+                Interactive Learning
+              </h3>
+              <p className="text-gray-300 text-lg leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                Engage with quizzes, chat with AI tutor, and take smart notes to master the content
+              </p>
+              
+              {/* Hover Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 to-red-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Learn Interactively</h3>
-            <p className="text-gray-300">Chat with AI tutor, take quizzes, and track your progress</p>
           </motion.div>
         </div>
+        
+        {/* Call to Action */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="text-center mt-16 relative z-10"
+        >
+          <motion.button
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)"
+            }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleDemoMode}
+            className="group relative px-12 py-5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl font-bold text-xl text-white overflow-hidden transition-all duration-300"
+          >
+            <span className="relative z-10 flex items-center space-x-3">
+              <span>🚀 Start Your Learning Journey</span>
+              <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </span>
+            {/* Shine Effect */}
+            <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          </motion.button>
+        </motion.div>
       </section>
 
       {/* CTA Section */}
