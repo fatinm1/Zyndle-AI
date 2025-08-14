@@ -8,10 +8,8 @@ python-dotenv==1.1.1
 requests==2.32.4
 pydantic==2.11.7
 
-# Database (lightweight)
-sqlite3  # Built into Python, no need to install
-
-# Optional: Add these back when needed
+# Note: sqlite3 is built into Python, no need to install
+# Note: Add these back when needed for full functionality
 # openai==1.97.1
 # yt-dlp==2024.12.13
 # openai-whisper==20231117
