@@ -14,6 +14,7 @@ function App() {
   const [showDemo, setShowDemo] = useState(false)
   const [showProgress, setShowProgress] = useState(false)
   const [authMode, setAuthMode] = useState('signin') // 'signin' or 'register'
+  const [demoMode, setDemoMode] = useState(false) // New demo mode state
 
   const handleAnalyze = async () => {
     if (!youtubeUrl) return
@@ -76,6 +77,28 @@ function App() {
   const handleAuthSuccess = () => {
     setShowAuth(false)
     setShowVideoInput(true)
+  }
+
+  const handleDemoMode = () => {
+    setDemoMode(true)
+    // Create demo video data
+    const demoData = {
+      title: "Nuclear Physics: Decay Processes and Energy",
+      channel: "Physics Academy",
+      duration: "15:32",
+      summary: "This comprehensive video explores nuclear physics fundamentals, covering binding energy, mass defect, and various decay processes. It explains how nuclear reactions can release energy according to Einstein's E=mc² equation, with practical examples and clear visualizations.",
+      chapters: [
+        { title: "Introduction to Nuclear Physics", start: 0, end: 135, description: "Overview of atomic structure and nuclear forces" },
+        { title: "Nuclear Binding Energy", start: 135, end: 390, description: "Understanding nuclear stability and mass defect" },
+        { title: "Types of Nuclear Decay", start: 390, end: 690, description: "Alpha, beta, and gamma decay processes" },
+        { title: "Energy Release in Reactions", start: 690, end: 930, description: "E=mc² and practical applications" }
+      ],
+      transcript: "Welcome to our exploration of nuclear physics. Today we'll dive deep into the fascinating world of atomic nuclei and their behavior. Nuclear physics is fundamental to understanding everything from power generation to medical imaging. Let's start with the concept of nuclear binding energy. When protons and neutrons come together to form a nucleus, they release energy. This is the binding energy that holds the nucleus together. The mass of the nucleus is actually less than the sum of its individual particles. This mass difference, called the mass defect, is converted to energy according to Einstein's famous equation E=mc². Nuclear decay occurs when unstable nuclei transform into more stable forms. Alpha decay releases helium nuclei, beta decay changes neutrons to protons, and gamma decay releases high-energy electromagnetic radiation. Each type of decay has different characteristics and energy implications. Understanding these processes is crucial for applications like nuclear power, medical treatments, and dating archaeological finds. The energy released in nuclear reactions is enormous compared to chemical reactions, making nuclear power an efficient energy source. However, it also requires careful control and safety measures. As we continue exploring nuclear physics, remember that these fundamental principles govern everything from the stars above to the atoms within us.",
+      thumbnail: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=225&fit=crop",
+      view_count: "125K",
+      like_count: "2.1K"
+    }
+    setVideoData(demoData)
   }
 
   const features = [
@@ -293,6 +316,14 @@ function App() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={handleDemoMode}
+                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
+                >
+                  🚀 Try Demo Mode
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleWatchDemo}
                   className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
                 >
@@ -309,6 +340,14 @@ function App() {
                 >
                   <Play className="w-5 h-5" />
                   <span>Start Learning</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDemoMode}
+                  className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
+                >
+                  🚀 Try Demo Mode
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -425,15 +464,25 @@ function App() {
                 <p className="text-xl text-gray-300 mb-8">
                   Ready to dive into another educational video? Your progress is being tracked!
                 </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowVideoInput(true)}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
-                >
-                  <span>Continue Analysis</span>
-                  <ChevronRight className="w-5 h-5" />
-                </motion.button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowVideoInput(true)}
+                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <span>Continue Analysis</span>
+                    <ChevronRight className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleDemoMode}
+                    className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
+                  >
+                    🚀 Try Demo Mode
+                  </motion.button>
+                </div>
               </>
             ) : (
               <>
@@ -441,15 +490,25 @@ function App() {
                 <p className="text-xl text-gray-300 mb-8">
                   Join thousands of students who are already learning smarter with Zyndle AI
                 </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleGetStarted}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2 mx-auto"
-                >
-                  <span>Get Started Free</span>
-                  <ChevronRight className="w-5 h-5" />
-                </motion.button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleGetStarted}
+                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <span>Get Started Free</span>
+                    <ChevronRight className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleDemoMode}
+                    className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-300"
+                  >
+                    🚀 Try Demo Mode
+                  </motion.button>
+                </div>
               </>
             )}
           </div>
@@ -665,11 +724,26 @@ function VideoWorkspace({ videoData, onBack }) {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Video Player */}
           <div className="lg:col-span-2">
-            <div className="bg-black rounded-lg aspect-video mb-6 flex items-center justify-center">
-              <div className="text-center">
-                <Play className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-400">Video Player Placeholder</p>
-              </div>
+            <div className="bg-black rounded-lg aspect-video mb-6 flex items-center justify-center overflow-hidden">
+              {demoMode ? (
+                <div className="text-center p-8">
+                  <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Play className="w-12 h-12 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Demo Mode Active</h3>
+                  <p className="text-gray-300 mb-4">Experience Zyndle AI features with sample content</p>
+                  <div className="flex items-center justify-center space-x-4 text-sm text-gray-400">
+                    <span>🎯 AI Analysis</span>
+                    <span>💬 Smart Chat</span>
+                    <span>📝 Interactive Notes</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Play className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-400">Video Player Placeholder</p>
+                </div>
+              )}
             </div>
 
             {/* Chapters */}
@@ -1064,6 +1138,156 @@ function AuthPage({ mode, onSuccess, onBack }) {
 
 // Demo Page Component
 function DemoPage({ onBack }) {
+  const [activeDemo, setActiveDemo] = useState('overview')
+  const [chatMessage, setChatMessage] = useState('')
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'assistant', content: "Hello! I'm your AI tutor. I can help you understand any topic from the video. What would you like to know about nuclear physics?" }
+  ])
+  const [quizAnswers, setQuizAnswers] = useState({})
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [quizScore, setQuizScore] = useState(0)
+  const [notes, setNotes] = useState([
+    { id: 1, title: "Key Nuclear Concepts", content: "Nuclear binding energy, mass defect, and E=mc² relationship are fundamental to understanding nuclear reactions." },
+    { id: 2, title: "Decay Processes", content: "Alpha, beta, and gamma decay each have different characteristics and energy implications." }
+  ])
+  const [newNote, setNewNote] = useState('')
+
+  const handleChat = () => {
+    if (!chatMessage.trim()) return
+    
+    const userMessage = { role: 'user', content: chatMessage }
+    setChatHistory([...chatHistory, userMessage])
+    
+    // Simulate AI response based on the question
+    const aiResponse = generateAIResponse(chatMessage)
+    setChatHistory(prev => [...prev, { role: 'assistant', content: aiResponse }])
+    setChatMessage('')
+  }
+
+  const generateAIResponse = (question) => {
+    const responses = {
+      'nuclear': "Nuclear physics deals with the structure and behavior of atomic nuclei. The key concept is that nuclei can release energy through processes like fission and fusion. Einstein's famous equation E=mc² shows how mass can be converted to energy.",
+      'binding': "Nuclear binding energy is the energy required to separate a nucleus into its individual protons and neutrons. It's what holds the nucleus together and is related to the mass defect - the difference between the mass of the nucleus and the sum of its parts.",
+      'decay': "Nuclear decay occurs when unstable nuclei transform into more stable forms. Alpha decay emits helium nuclei, beta decay changes neutrons to protons (or vice versa), and gamma decay releases high-energy electromagnetic radiation.",
+      'energy': "Nuclear reactions can release enormous amounts of energy. In nuclear power plants, controlled fission reactions generate electricity. The energy comes from the mass difference between reactants and products, following E=mc².",
+      'default': "That's a great question about nuclear physics! The video covers fundamental concepts like nuclear binding energy, decay processes, and how nuclear reactions can release energy. Would you like me to explain any specific aspect in more detail?"
+    }
+    
+    const lowerQuestion = question.toLowerCase()
+    for (const [key, response] of Object.entries(responses)) {
+      if (lowerQuestion.includes(key)) {
+        return response
+      }
+    }
+    return responses.default
+  }
+
+  const handleQuizAnswer = (questionIndex, answerIndex) => {
+    setQuizAnswers(prev => ({
+      ...prev,
+      [questionIndex]: answerIndex
+    }))
+  }
+
+  const submitQuiz = () => {
+    let correct = 0
+    demoQuizQuestions.forEach((question, index) => {
+      if (quizAnswers[index] === question.correct_answer) {
+        correct++
+      }
+    })
+    const score = Math.round((correct / demoQuizQuestions.length) * 100)
+    setQuizScore(score)
+    setQuizSubmitted(true)
+  }
+
+  const resetQuiz = () => {
+    setQuizAnswers({})
+    setQuizSubmitted(false)
+    setQuizScore(0)
+  }
+
+  const saveNote = () => {
+    if (!newNote.trim()) return
+    const note = {
+      id: Date.now(),
+      title: `Note on Nuclear Physics`,
+      content: newNote
+    }
+    setNotes([note, ...notes])
+    setNewNote('')
+  }
+
+  const deleteNote = (noteId) => {
+    setNotes(notes.filter(note => note.id !== noteId))
+  }
+
+  const demoQuizQuestions = [
+    {
+      question: "What is the main source of energy in nuclear reactions?",
+      options: ["Chemical bonds", "Mass conversion", "Electromagnetic force", "Gravitational energy"],
+      correct_answer: 1,
+      explanation: "Nuclear reactions convert mass to energy according to Einstein's equation E=mc², where a small amount of mass can release enormous amounts of energy."
+    },
+    {
+      question: "Which type of nuclear decay releases a helium nucleus?",
+      options: ["Alpha decay", "Beta decay", "Gamma decay", "Neutron decay"],
+      correct_answer: 0,
+      explanation: "Alpha decay releases a helium nucleus (2 protons + 2 neutrons), which is the most massive type of nuclear radiation."
+    },
+    {
+      question: "What does the 'c' represent in Einstein's equation E=mc²?",
+      options: ["Charge", "Speed of light", "Constant", "Capacity"],
+      correct_answer: 1,
+      explanation: "The 'c' represents the speed of light in vacuum, which is approximately 3 × 10⁸ meters per second."
+    },
+    {
+      question: "Nuclear binding energy is highest for which elements?",
+      options: ["Light elements", "Medium-mass elements", "Heavy elements", "All elements equally"],
+      correct_answer: 1,
+      explanation: "Medium-mass elements (around iron-56) have the highest nuclear binding energy per nucleon, making them the most stable."
+    },
+    {
+      question: "What happens during beta decay?",
+      options: ["A neutron becomes a proton", "A proton becomes a neutron", "A helium nucleus is emitted", "High-energy photons are released"],
+      correct_answer: 0,
+      explanation: "During beta decay, a neutron in the nucleus transforms into a proton, releasing an electron and an antineutrino."
+    }
+  ]
+
+  const demoFeatures = [
+    {
+      icon: "🧠",
+      title: "AI-Powered Analysis",
+      description: "Watch as our AI processes video content to extract key concepts, create summaries, and identify important topics."
+    },
+    {
+      icon: "💬",
+      title: "Interactive Chat",
+      description: "Ask questions about any topic from the video and get intelligent, contextual responses from your AI tutor."
+    },
+    {
+      icon: "📝",
+      title: "Smart Summaries",
+      description: "Get comprehensive summaries with chapter breakdowns, key points, and learning objectives automatically generated."
+    },
+    {
+      icon: "🎯",
+      title: "Adaptive Quizzes",
+      description: "Test your knowledge with AI-generated quizzes that adapt to the video content and your learning level."
+    },
+    {
+      icon: "📚",
+      title: "Personalized Notes",
+      description: "Take notes with AI assistance, organize your thoughts, and build a personal knowledge base."
+    },
+    {
+      icon: "📊",
+      title: "Progress Tracking",
+      description: "Monitor your learning journey with detailed analytics, insights, and personalized recommendations."
+    }
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
       {/* Navigation */}
@@ -1089,84 +1313,393 @@ function DemoPage({ onBack }) {
       </nav>
 
       {/* Demo Content */}
-      <section className="container mx-auto px-6 py-20">
+      <section className="container mx-auto px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl mx-auto"
+          className="text-center mb-12"
         >
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            See Zyndle AI in Action
+            Experience <span className="text-gradient">Zyndle AI</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed">
-            Watch how our AI transforms a YouTube video into an interactive learning experience
+          <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
+            See how our AI transforms learning with this interactive demonstration
           </p>
+          
+          {/* Demo Navigation */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {['overview', 'analysis', 'chat', 'quiz', 'notes'].map((tab) => (
+              <motion.button
+                key={tab}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveDemo(tab)}
+                className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  activeDemo === tab 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                    : 'bg-white/10 backdrop-blur-md border border-white/20 text-gray-300 hover:bg-white/20'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
 
-          {/* Demo Video */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="max-w-4xl mx-auto"
-          >
+        {/* Demo Content */}
+        <motion.div
+          key={activeDemo}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-6xl mx-auto"
+        >
+          {activeDemo === 'overview' && (
             <div className="glass-dark rounded-2xl p-8">
-              <div className="aspect-video bg-black rounded-lg mb-6 overflow-hidden">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
-                  title="Zyndle AI Demo"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="rounded-lg"
-                ></iframe>
+              <h2 className="text-3xl font-bold text-center mb-8">Interactive Learning Features</h2>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {demoFeatures.map((feature, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{ y: -5 }}
+                    className="glass-dark rounded-xl p-6 text-center hover:neon-glow transition-all duration-300"
+                  >
+                    <div className="text-4xl mb-4">{feature.icon}</div>
+                    <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                    <p className="text-gray-300 text-sm leading-relaxed">{feature.description}</p>
+                  </motion.div>
+                ))}
               </div>
               
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-semibold mb-2">Sample Educational Video</h3>
-                <p className="text-gray-300">This will show a walkthrough of Zyndle AI features</p>
-              </div>
-              
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Brain className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-semibold mb-2">AI Analysis</h3>
-                  <p className="text-sm text-gray-300">Watch how AI processes and summarizes content</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <MessageCircle className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Interactive Chat</h3>
-                  <p className="text-sm text-gray-300">See the AI tutor in action</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <BookOpen className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Quiz Generation</h3>
-                  <p className="text-sm text-gray-300">Experience AI-generated quizzes</p>
-                </div>
-              </div>
-              
-              <div className="mt-8 text-center">
+              <div className="text-center mt-8">
+                <p className="text-gray-300 mb-4">Click on any feature above to see it in action!</p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={onBack}
+                  onClick={() => setActiveDemo('analysis')}
                   className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                 >
-                  Try It Yourself
+                  Start Demo
                 </motion.button>
               </div>
             </div>
-          </motion.div>
+          )}
+
+          {activeDemo === 'analysis' && (
+            <div className="glass-dark rounded-2xl p-8">
+              <h2 className="text-3xl font-bold text-center mb-8">AI Video Analysis</h2>
+              
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Video Placeholder */}
+                <div>
+                  <div className="bg-black rounded-lg aspect-video mb-6 flex items-center justify-center overflow-hidden">
+                    {demoMode ? (
+                      <div className="text-center p-8">
+                        <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Play className="w-12 h-12 text-white" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2 text-white">Demo Mode Active</h3>
+                        <p className="text-gray-300 mb-4">Experience Zyndle AI features with sample content</p>
+                        <div className="flex items-center justify-center space-x-4 text-sm text-gray-400">
+                          <span>🎯 AI Analysis</span>
+                          <span>💬 Smart Chat</span>
+                          <span>📝 Interactive Notes</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <Play className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                        <p className="text-gray-400">Video Player Placeholder</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="glass-dark rounded-lg p-4">
+                    <h4 className="font-semibold mb-2">Video Information</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-gray-400">Title:</span> Nuclear Decay Processes and Energy</p>
+                      <p><span className="text-gray-400">Channel:</span> Physics Academy</p>
+                      <p><span className="text-gray-400">Duration:</span> 15:32</p>
+                      <p><span className="text-gray-400">Views:</span> 125K</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Analysis Results */}
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">AI Analysis Results</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="glass-dark rounded-lg p-4">
+                      <h4 className="font-medium text-blue-400 mb-2">Summary</h4>
+                      <p className="text-gray-300 text-sm">
+                        This video explores nuclear physics fundamentals, covering binding energy, mass defect, 
+                        and various decay processes. It explains how nuclear reactions can release energy 
+                        according to Einstein's E=mc² equation.
+                      </p>
+                    </div>
+                    
+                    <div className="glass-dark rounded-lg p-4">
+                      <h4 className="font-medium text-green-400 mb-2">Key Topics</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {['Nuclear Binding Energy', 'Mass Defect', 'Alpha Decay', 'Beta Decay', 'E=mc²'].map((topic, index) => (
+                          <span key={index} className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-sm">
+                            {topic}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="glass-dark rounded-lg p-4">
+                      <h4 className="font-medium text-purple-400 mb-2">Chapters</h4>
+                      <div className="space-y-2">
+                        {[
+                          { title: "Introduction", time: "0:00", desc: "Overview of nuclear physics" },
+                          { title: "Binding Energy", time: "2:15", desc: "Understanding nuclear stability" },
+                          { title: "Decay Processes", time: "6:30", desc: "Alpha, beta, and gamma decay" },
+                          { title: "Energy Release", time: "11:45", desc: "E=mc² and nuclear power" }
+                        ].map((chapter, index) => (
+                          <div key={index} className="flex justify-between items-center p-2 rounded hover:bg-white/5">
+                            <div>
+                              <p className="font-medium">{chapter.title}</p>
+                              <p className="text-sm text-gray-400">{chapter.desc}</p>
+                            </div>
+                            <span className="text-sm text-gray-400">{chapter.time}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeDemo === 'chat' && (
+            <div className="glass-dark rounded-2xl p-8">
+              <h2 className="text-3xl font-bold text-center mb-8">AI Chat Tutor</h2>
+              
+              <div className="max-w-4xl mx-auto">
+                <div className="glass-dark rounded-lg p-6 mb-6">
+                  <h3 className="text-xl font-semibold mb-4">Chat with Your AI Tutor</h3>
+                  <p className="text-gray-300 mb-4">
+                    Ask questions about nuclear physics, the video content, or any related topics. 
+                    The AI will provide contextual, educational responses.
+                  </p>
+                  
+                  {/* Chat History */}
+                  <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                    {chatHistory.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-xs p-3 rounded-lg ${
+                            message.role === 'user'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-700 text-gray-200'
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Chat Input */}
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleChat()}
+                      placeholder="Ask about nuclear physics, binding energy, decay processes..."
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={handleChat}
+                      className="px-6 py-3 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-gray-300 mb-4">Try asking about: nuclear binding energy, decay processes, or E=mc²</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeDemo === 'quiz' && (
+            <div className="glass-dark rounded-2xl p-8">
+              <h2 className="text-3xl font-bold text-center mb-8">Interactive Quiz</h2>
+              
+              <div className="max-w-4xl mx-auto">
+                {!quizSubmitted ? (
+                  <div>
+                    <div className="text-center mb-8">
+                      <h3 className="text-xl font-semibold mb-2">Test Your Knowledge</h3>
+                      <p className="text-gray-300">
+                        Answer these questions about nuclear physics to test your understanding of the video content.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {demoQuizQuestions.map((question, qIndex) => (
+                        <div key={qIndex} className="glass-dark rounded-lg p-6">
+                          <h4 className="font-medium mb-4 text-lg">
+                            {qIndex + 1}. {question.question}
+                          </h4>
+                          <div className="space-y-3">
+                            {question.options.map((option, oIndex) => (
+                              <label key={oIndex} className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`question-${qIndex}`}
+                                  checked={quizAnswers[qIndex] === oIndex}
+                                  onChange={() => handleQuizAnswer(qIndex, oIndex)}
+                                  className="text-blue-500 focus:ring-blue-500"
+                                />
+                                <span className="text-gray-300">{option}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="text-center mt-8">
+                      <button
+                        onClick={submitQuiz}
+                        disabled={Object.keys(quizAnswers).length < demoQuizQuestions.length}
+                        className="px-8 py-3 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
+                      >
+                        Submit Quiz
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-semibold mb-4">Quiz Results</h3>
+                      <div className="text-5xl font-bold text-blue-500 mb-2">{quizScore}%</div>
+                      <p className="text-gray-300 text-lg">
+                        You got {Math.round((quizScore / 100) * demoQuizQuestions.length)} out of {demoQuizQuestions.length} questions correct!
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {demoQuizQuestions.map((question, qIndex) => (
+                        <div key={qIndex} className="glass-dark rounded-lg p-6">
+                          <h4 className="font-medium mb-3 text-lg">{qIndex + 1}. {question.question}</h4>
+                          <div className="space-y-2 mb-4">
+                            {question.options.map((option, oIndex) => (
+                              <div
+                                key={oIndex}
+                                className={`p-3 rounded ${
+                                  oIndex === question.correct_answer
+                                    ? 'bg-green-500/20 border border-green-500/30'
+                                    : oIndex === quizAnswers[qIndex] && oIndex !== question.correct_answer
+                                    ? 'bg-red-500/20 border border-red-500/30'
+                                    : 'bg-gray-700/50'
+                                }`}
+                              >
+                                {option}
+                                {oIndex === question.correct_answer && (
+                                  <span className="ml-2 text-green-400">✓ Correct</span>
+                                )}
+                                {oIndex === quizAnswers[qIndex] && oIndex !== question.correct_answer && (
+                                  <span className="ml-2 text-red-400">✗ Your Answer</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-sm text-gray-400 bg-gray-800/50 p-3 rounded">
+                            <strong>Explanation:</strong> {question.explanation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="text-center mt-8">
+                      <button
+                        onClick={resetQuiz}
+                        className="px-8 py-3 bg-gray-600 rounded-lg hover:bg-gray-700 transition-colors font-medium text-lg"
+                      >
+                        Take Quiz Again
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeDemo === 'notes' && (
+            <div className="glass-dark rounded-2xl p-8">
+              <h2 className="text-3xl font-bold text-center mb-8">Smart Notes & Learning</h2>
+              
+              <div className="max-w-4xl mx-auto">
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {/* Existing Notes */}
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Your Notes</h3>
+                    
+                    <div className="space-y-4">
+                      {notes.map((note) => (
+                        <div key={note.id} className="glass-dark rounded-lg p-4">
+                          <h4 className="font-medium mb-2 text-blue-400">{note.title}</h4>
+                          <p className="text-gray-300 text-sm mb-3">{note.content}</p>
+                          <button
+                            onClick={() => deleteNote(note.id)}
+                            className="text-red-400 hover:text-red-300 text-sm"
+                          >
+                            Delete Note
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Add New Note */}
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Add New Note</h3>
+                    
+                    <div className="glass-dark rounded-lg p-4">
+                      <textarea
+                        value={newNote}
+                        onChange={(e) => setNewNote(e.target.value)}
+                        placeholder="Write your thoughts, questions, or key points from the video..."
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="4"
+                      ></textarea>
+                      
+                      <button
+                        onClick={saveNote}
+                        className="mt-3 w-full py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                      >
+                        Save Note
+                      </button>
+                    </div>
+                    
+                    <div className="mt-6 text-center">
+                      <p className="text-gray-300 text-sm">
+                        Notes are automatically organized by topic and can be exported to your favorite tools.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       </section>
     </div>
