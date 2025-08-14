@@ -4,7 +4,6 @@
   "description": "AI-powered learning companion for YouTube videos",
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
-    "postinstall": "pip install -r requirements.txt",
     "start": "python main.py",
     "dev": "cd frontend && npm run dev"
   },

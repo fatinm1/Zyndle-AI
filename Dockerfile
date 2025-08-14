@@ -16,9 +16,9 @@ WORKDIR /app
 COPY package.json ./
 COPY frontend/package.json ./frontend/
 
-# Install Node.js dependencies
-RUN npm install
-RUN cd frontend && npm install
+# Install Node.js dependencies (without running postinstall scripts)
+RUN npm install --ignore-scripts
+RUN cd frontend && npm install --ignore-scripts
 
 # Copy the frontend source code
 COPY frontend/ ./frontend/
