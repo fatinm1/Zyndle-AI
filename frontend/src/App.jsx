@@ -1163,10 +1163,33 @@ function AuthPage({ mode, onSuccess, onBack }) {
   )
 }
 
+// Demo Page Component
+function DemoPage({ onBack }) {
+  const [activeDemo, setActiveDemo] = useState('overview')
+  const [chatMessage, setChatMessage] = useState('')
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'assistant', content: "Hello! I'm your AI tutor. I can help you understand any topic from the video. What would you like to know about nuclear physics?" }
+  ])
+  const [quizAnswers, setQuizAnswers] = useState({})
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [quizScore, setQuizScore] = useState(0)
+  const [notes, setNotes] = useState([
+    { id: 1, title: "Key Nuclear Concepts", content: "Nuclear binding energy, mass defect, and E=mc² relationship are fundamental to understanding nuclear reactions." },
+    { id: 2, title: "Decay Processes", content: "Alpha, beta, and gamma decay each have different characteristics and energy implications." }
+  ])
+  const [newNote, setNewNote] = useState('')
 
-
-
-
+  const handleChat = () => {
+    if (!chatMessage.trim()) return
+    
+    const userMessage = { role: 'user', content: chatMessage }
+    setChatHistory([...chatHistory, userMessage])
+    
+    // Simulate AI response based on the question
+    const aiResponse = generateAIResponse(chatMessage)
+    setChatHistory(prev => [...prev, { role: 'assistant', content: aiResponse }])
+    setChatMessage('')
+  }
 
   const generateAIResponse = (question) => {
     const responses = {
