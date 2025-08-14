@@ -37,7 +37,7 @@ except ImportError as e:
 # Load environment variables
 load_dotenv()
 
-# Create database tables
+# Create database tables (only if available)
 if create_tables:
     try:
         create_tables()
@@ -68,6 +68,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Simple root endpoint for basic health check
+@app.get("/")
+async def root():
+    """Root endpoint for basic health check"""
+    return {
+        "message": "Zyndle AI API is running!",
+        "status": "healthy",
+        "version": "1.0.0"
+    }
+
+@app.get("/ping")
+async def ping():
+    """Simple ping endpoint for Railway health checks"""
+    return {"pong": "ok"}
+
+@app.get("/api/health")
+async def api_health():
+    """API health check endpoint"""
+    return {
+        "status": "healthy",
+        "message": "API is responding",
+        "version": "1.0.0"
+    }
+
 # Mount static files for frontend
 import os
 print(f"Backend working directory: {os.getcwd()}")
@@ -94,7 +118,7 @@ if frontend_dist.exists():
     # Mount static assets
     app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="assets")
     
-    @app.get("/")
+    @app.get("/app")
     async def serve_frontend():
         """Serve the frontend index.html"""
         index_path = frontend_dist / "index.html"
@@ -107,11 +131,8 @@ if frontend_dist.exists():
             return {"message": "Zyndle AI API is running!"}
 else:
     print("Frontend dist not found! Serving API only.")
-    @app.get("/")
-    async def root():
-        return {"message": "Zyndle AI API is running!"}
 
-# Initialize services
+# Initialize services gracefully
 youtube_service = None
 ai_service = None
 auth_service = None
@@ -122,16 +143,22 @@ transcription_service = None
 try:
     if YouTubeService:
         youtube_service = YouTubeService()
+        print("✅ YouTube service initialized")
     if AIService:
         ai_service = AIService()
+        print("✅ AI service initialized")
     if AuthService:
         auth_service = AuthService()
+        print("✅ Auth service initialized")
     if ProgressService:
         progress_service = ProgressService()
+        print("✅ Progress service initialized")
     if NotesService:
         notes_service = NotesService()
+        print("✅ Notes service initialized")
     if TranscriptionService:
         transcription_service = TranscriptionService()
+        print("✅ Transcription service initialized")
     print("✅ All available services initialized successfully")
 except Exception as e:
     print(f"❌ Error initializing services: {e}")
@@ -239,27 +266,45 @@ async def health_check():
     return {
         "status": "healthy", 
         "message": "Zyndle AI API is running",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "timestamp": "2024-01-01T00:00:00Z"
     }
 
 @app.get("/health/detailed")
 async def detailed_health_check():
     """Detailed health check with service status"""
     try:
+        # Always return a response, even if services are unavailable
+        services_status = {}
+        
+        try:
+            services_status["youtube"] = "available" if youtube_service else "unavailable"
+        except:
+            services_status["youtube"] = "unavailable"
+            
+        try:
+            services_status["ai"] = "available" if ai_service else "unavailable"
+        except:
+            services_status["ai"] = "unavailable"
+            
+        try:
+            services_status["transcription"] = "available" if transcription_service else "unavailable"
+        except:
+            services_status["transcription"] = "unavailable"
+        
         return {
             "status": "healthy", 
-            "services": {
-                "youtube": "available" if youtube_service else "unavailable", 
-                "ai": "available" if ai_service else "unavailable",
-                "transcription": "available" if transcription_service else "unavailable"
-            },
-            "version": "1.0.0"
+            "services": services_status,
+            "version": "1.0.0",
+            "timestamp": "2024-01-01T00:00:00Z"
         }
     except Exception as e:
+        # Even if everything fails, return a degraded status instead of erroring
         return {
             "status": "degraded",
             "error": str(e),
-            "version": "1.0.0"
+            "version": "1.0.0",
+            "timestamp": "2024-01-01T00:00:00Z"
         }
 
 # Authentication endpoints (simplified for now)

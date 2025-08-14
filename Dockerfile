@@ -1,15 +1,11 @@
 # Use Python base image
 FROM python:3.11-slim
 
-# Install Node.js and npm in a single layer to reduce size
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* \
-    && rm -rf /var/tmp/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -20,22 +16,14 @@ COPY backend/requirements-deploy.txt ./requirements.txt
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy package.json and install Node.js dependencies
-COPY package.json .
-COPY frontend/package.json ./frontend/
+# Copy the backend code
+COPY backend/ ./backend/
 
-# Install Node.js dependencies
-RUN npm install
-RUN cd frontend && npm install
-
-# Copy the rest of the application
-COPY . .
-
-# Build frontend
-RUN cd frontend && npm run build
+# Set working directory to backend
+WORKDIR /app/backend
 
 # Expose port
 EXPOSE 8000
 
 # Start the application
-CMD ["python", "backend/start.py"] 
+CMD ["python", "start.py"] 
