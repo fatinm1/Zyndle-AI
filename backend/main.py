@@ -40,11 +40,27 @@ load_dotenv()
 # Create database tables (only if available)
 if create_tables:
     try:
+        print("🔍 Initializing database...")
         create_tables()
         print("✅ Database tables created/verified successfully")
+        
+        # Test database connection
+        try:
+            from models.database import engine
+            with engine.connect() as conn:
+                if "postgresql" in str(engine.url):
+                    result = conn.execute("SELECT version()")
+                    version = result.fetchone()[0]
+                    print(f"✅ PostgreSQL connected: {version.split(',')[0]}")
+                else:
+                    print("✅ SQLite database connected")
+        except Exception as e:
+            print(f"⚠️ Database connection test failed: {e}")
+            
     except Exception as e:
         print(f"⚠️ Warning: Database initialization failed: {e}")
         print("Application will continue with limited functionality")
+        print("💡 Tip: Check your DATABASE_URL environment variable")
 else:
     print("⚠️ Warning: Database not available")
 
